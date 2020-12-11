@@ -1,0 +1,8 @@
+.idea/.gitignore
+.idea/Saanens.iml
+.idea/deployment.xml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+cmake-build-debug/
