@@ -33,13 +33,13 @@
             <property name="position">0</property>
           </packing>
         </child>
-        <child>
-          <placeholder/>
-        </child>
       </object>
     </child>
     <child type="titlebar">
       <placeholder/>
     </child>
+    <style>
+      <class name="main"/>
+    </style>
   </object>
 </interface>
