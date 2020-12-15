@@ -3,7 +3,9 @@ project(Saanens C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(Saanens src/main.c)
+add_executable(Saanens src/main.c src/keyEvent.c)
+
+include_directories("includes")
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
