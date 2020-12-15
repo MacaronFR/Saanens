@@ -1,9 +1,29 @@
-#include <gtk/gtk.h>
+#include <keyEvent.h>
+#include <variable.h>
 
 G_MODULE_EXPORT void end_program(GtkWidget *object, gpointer user_data);
-G_MODULE_EXPORT gboolean send_command(GtkWidget *textView, GdkEvent *event, gpointer user_data);
 
 int main(int argc,char **argv){
+	s_vars *test = malloc(sizeof(s_vars));
+	s_var temp;
+	test->length = 2;
+	test->vars = malloc(sizeof(s_var) * 2);
+	temp.name = "TEST";
+	temp.type = 1;
+	temp.var = NULL;
+	test->vars[0] = temp;
+	temp.name = "TEST2";
+	temp.type = 2;
+	temp.var = NULL;
+	test->vars[1] = temp;
+	int test1 = 7;
+	new_var(&test1, "TEST3", 5, 3, test);
+	for(int i = 0; i < test->length; ++i){
+		printf("Name : %s ; Type %d\n",test->vars[i].name,test->vars[i].type);
+	}
+	free(test->vars);
+	free(test);
+	/*
 	GtkBuilder *builder;
 	GtkWidget *window;
 	GtkCssProvider *provider;
@@ -28,44 +48,10 @@ int main(int argc,char **argv){
 
 	gtk_widget_show(window);
 	gtk_main();
+	 */
 	return 0;
 }
 
 G_MODULE_EXPORT void end_program(GtkWidget *object, gpointer user_data){
 	gtk_main_quit();
-}
-
-G_MODULE_EXPORT gboolean keypressInterpretor(GtkWidget *widget, GdkEvent *event, gpointer user_data){
-	GtkTextView *textView = GTK_TEXT_VIEW(widget);
-//	printf("%s",gdk_keyval_name(event->key.keyval));
-	GdkRectangle *strong = NULL, *weak = NULL;
-	strong = g_malloc(sizeof(GdkRectangle));
-	gtk_text_view_get_cursor_locations(textView, NULL, strong, weak);
-	if(strong != NULL){
-		printf("%d\n", strong->x);
-		fflush(stdout);
-	}
-	if(event->key.keyval == GDK_KEY_Up){
-		return TRUE;
-	}
-	if(event->key.keyval == GDK_KEY_BackSpace || event->key.keyval == GDK_KEY_Left){
-		if(strong->x == 18){
-			return TRUE;
-		}
-	}
-	if(event->key.keyval == GDK_KEY_Return){
-		gtk_text_buffer_insert_at_cursor(gtk_text_view_get_buffer(textView), "\n> ",strlen("\n> "));
-		return TRUE;
-	}
-	/*if(event->key.keyval == GDK_KEY_Return) {
-		gchar *contents, *locale;
-		GtkTextIter start, end;
-		GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textView));
-		gtk_text_buffer_get_bounds(buffer, &start, &end);
-		contents = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-		locale = g_locale_from_utf8(contents, -1, NULL, NULL, NULL);
-		printf("command : %s\n", locale);
-		g_free(contents), contents = NULL;
-	}*/
-	return FALSE;
 }
