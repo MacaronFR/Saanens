@@ -1,7 +1,4 @@
-#include <keyEvent.h>
 #include <variable.h>
-
-G_MODULE_EXPORT void end_program(GtkWidget *object, gpointer user_data);
 
 int main(int argc,char **argv){
 	s_vars *test = malloc(sizeof(s_vars));
@@ -23,32 +20,6 @@ int main(int argc,char **argv){
 	}
 	free(test->vars);
 	free(test);
-	/*
-	GtkBuilder *builder;
-	GtkWidget *window;
-	GtkCssProvider *provider;
-	GdkDisplay *display;
-	GdkScreen *screen;
-	gtk_init(&argc,&argv);
-	builder = gtk_builder_new();
-	gtk_builder_add_from_file(builder, "../glade/test.glade",NULL);
-	window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
-	if(window == NULL){
-		perror("Unknow widget window");
-		return 1;
-	}
-	gtk_builder_connect_signals(builder, window);
-	g_object_unref(builder);
-
-	provider = gtk_css_provider_new();
-	display = gdk_display_get_default();
-	screen = gdk_display_get_default_screen(display);
-	gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-	gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),"../style/style.css", NULL);
-
-	gtk_widget_show(window);
-	gtk_main();
-	 */
 	return 0;
 }
 
