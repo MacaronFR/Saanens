@@ -12,12 +12,12 @@
 #define S_TYPE_CHAINE 8
 #define S_TYPE_TABLEAU 16
 
-#ifndef FALSE
+/*#ifndef FALSE
 #define FALSE (0)
 #endif
 #ifndef TRUE
 #define TRUE (!FALSE)
-#endif
+#endif*/
 
 typedef struct{
 	uint8_t type;
@@ -30,7 +30,9 @@ typedef struct {
 	uint64_t length;
 } s_vars;
 
-typedef uint8_t boolean;
+//typedef uint8_t boolean;
+
+typedef enum boolean {FALSE = 0, TRUE = 1} boolean;
 
 boolean new_var(void *value, const char *name, size_t name_size, uint8_t type, s_vars *vars);
 void *get_var_i(uint64_t index,s_vars *vars);
