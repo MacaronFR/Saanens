@@ -1,4 +1,5 @@
 #include <variable.h>
+#include <interpret.h>
 
 int main(int argc,char **argv){
 	s_vars *test = malloc(sizeof(s_vars));
@@ -18,11 +19,9 @@ int main(int argc,char **argv){
 	for(int i = 0; i < test->length; ++i){
 		printf("Name : %s ; Type %d\n",test->vars[i].name,test->vars[i].type);
 	}
+	printf("index of TEST2 : %d",get_index("TEST2",5,test));
+	interpret_command("int a = 5;");
 	free(test->vars);
 	free(test);
 	return 0;
-}
-
-G_MODULE_EXPORT void end_program(GtkWidget *object, gpointer user_data){
-	gtk_main_quit();
 }

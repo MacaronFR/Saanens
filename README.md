@@ -10,8 +10,7 @@ Utilisation de la bibliothèque Gtk+
 
 ##**Mot clés et signification**
 
-###bouc => Boucle itérative
-```
+### bouc => Boucle itérative```
 bouc(variable = début; condition d'arrêt; instruction à executer a chaque tour)
 #code à itérer
 finbouc;
