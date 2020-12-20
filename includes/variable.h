@@ -6,21 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define S_TYPE_ENTIER 1
-#define S_TYPE_FLOTTANT 2
-#define S_TYPE_CARACTERE 4
-#define S_TYPE_CHAINE 8
-#define S_TYPE_TABLEAU 16
+typedef enum boolean {False = 0, True = 1} boolean;
 
-/*#ifndef FALSE
-#define FALSE (0)
-#endif
-#ifndef TRUE
-#define TRUE (!FALSE)
-#endif*/
+typedef enum s_type {S_NOT = 0, S_ENT = 1, S_FLOT = 2, S_CAR = 4, S_CHAINE = 8, S_TAB = 16} type;
 
 typedef struct{
-	uint8_t type;
+	type type;
 	char *name;
 	void *var;
 } s_var;
@@ -30,15 +21,15 @@ typedef struct {
 	uint64_t length;
 } s_vars;
 
-//typedef uint8_t boolean;
+static s_vars vartab;
 
-typedef enum boolean {FALSE = 0, TRUE = 1} boolean;
-
-boolean new_var(void *value, const char *name, size_t name_size, uint8_t type, s_vars *vars);
-void *get_var_i(uint64_t index,s_vars *vars);
-void *get_var(const char *name, size_t name_size, s_vars *vars);
-uint64_t get_index(const char *name, size_t name_size,s_vars *vars);
-uint8_t get_type_i(uint64_t index, s_vars *vars);
-uint8_t get_type(const char *name,size_t name_size, s_vars *vars);
+boolean new_var(void *value, const char *name, size_t name_size, type t);
+void *get_var_i(uint64_t index);
+void *get_var(const char *name, size_t name_size);
+uint64_t get_index(const char *name, size_t name_size);
+type get_type_i(uint64_t index);
+type get_type(const char *name,size_t name_size);
+type get_type_from_name(const char *name, size_t name_size);
+char *get_name_from_type(type t);
 
 #endif //SAANENS_VARIABLE_H
