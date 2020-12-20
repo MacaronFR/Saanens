@@ -21,8 +21,6 @@ typedef struct {
 	uint64_t length;
 } s_vars;
 
-static s_vars vartab;
-
 boolean new_var(void *value, const char *name, size_t name_size, type t);
 void *get_var_i(uint64_t index);
 void *get_var(const char *name, size_t name_size);

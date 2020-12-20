@@ -42,7 +42,7 @@ boolean s_testreg(const char* exp, gchar *command, regmatch_t **pmatch, int cfla
 			free(*pmatch);
 		}
 		*pmatch = malloc(sizeof(pmatch) * reg.re_nsub);
-		printf("groups = %d\n",reg.re_nsub);
+//		printf("groups = %d\n",reg.re_nsub);
 		match = regexec(&reg, command, reg.re_nsub, *pmatch, 0);
 
 	}

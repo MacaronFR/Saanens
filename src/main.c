@@ -1,6 +1,8 @@
 #include <variable.h>
 #include <interpret.h>
 
+extern s_vars vartab;
+
 int main(int argc,char **argv){
 	s_var temp;
 	vartab.length = 2;
@@ -14,6 +16,7 @@ int main(int argc,char **argv){
 	temp.var = NULL;
 	vartab.vars[1] = temp;
 	int test1 = 7;
+	printf("***%d***\n",vartab.length);
 	if(!new_var(&test1, "TEST3", 5, S_ENT)){
 		perror("Error on new var");
 	}

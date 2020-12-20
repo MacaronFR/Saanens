@@ -1,5 +1,7 @@
 #include <variable.h>
 
+s_vars vartab;
+
 boolean new_var(void *value, const char *name, size_t name_size, type t){
 	s_var *new_vars = malloc(sizeof(s_var) * (vartab.length+1));
 	s_var new_var;
