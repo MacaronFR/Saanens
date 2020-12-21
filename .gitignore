@@ -5,4 +5,7 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
+/.idea/
 cmake-build-debug/
+test.glade~
+/.idea/discord.xml
