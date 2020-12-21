@@ -6,32 +6,50 @@ boolean new_var(void *value, const char *name, size_t name_size, type t){
 	s_var *new_vars = malloc(sizeof(s_var) * (vartab.length+1));
 	s_var new_var;
 	new_var.name = malloc(name_size+1);
+
 	for(uint64_t i = 0; i < name_size; ++i){
 		new_var.name[i] = name[i];
 	}
 	new_var.name[name_size] = '\0';
 	new_var.type = t;
+	if(value != NULL) {
+		assign_value(&new_var, value);
+	}
 	for(uint64_t i = 0; i < vartab.length; ++i){
-		new_vars[i] = vartab.vars[i];
+		new_vars[i] = vartab.tab[i];
 	}
 	new_vars[vartab.length] = new_var;
 	printf("*%d*\n",vartab.length);
 	vartab.length++;
+	free(vartab.tab);
+	vartab.tab = new_vars;
+	return True;
+}
 
-	free(vartab.vars);
-	vartab.vars = new_vars;
+boolean assign_value(s_var *var, void *value){
+	switch (var->type) {
+		case S_ENT: var->value.ve = *((int*)value);break;
+		case S_FLOT: var->value.vf = *((double*)value);break;
+		case S_CAR: var->value.vc = *((char*)value);break;
+		case S_CHAINE: var->value.vs = malloc(strlen((char*)value));strcpy(var->value.vs, (char*)value);break;
+		default: return False;
+	}
 	return True;
 }
 
 uint64_t get_index(const char *name,size_t name_size){
 	uint64_t i = 0;
-	while(strcmp(name,vartab.vars[i].name) != 0 && i < vartab.length)
+	while(strcmp(name,vartab.tab[i].name) != 0 && i < vartab.length)
 		++i;
 	return i;
 }
 
 void *get_var_i(uint64_t index){
-	return vartab.vars[index].var;
+	switch (vartab.tab[index].type){
+		case S_ENT: return &(vartab.tab[index].value.ve);
+		case S_FLOT: return &(vartab.tab[index].value.vf);
+		default: return NULL;
+	}
 }
 
 void *get_var(const char *name, size_t name_size){
@@ -39,7 +57,7 @@ void *get_var(const char *name, size_t name_size){
 }
 
 type get_type_i(uint64_t index){
-	return vartab.vars[index].type;
+	return vartab.tab[index].type;
 }
 
 type get_type(const char *name,size_t name_size){
