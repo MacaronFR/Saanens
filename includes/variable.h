@@ -16,13 +16,13 @@ typedef union{
 	char vc;
 	char *vs;
 	void *vb;
-	boolean undefined;
 } s_value;
 
 typedef struct{
 	type type;
 	char *name;
 	s_value value;
+	boolean undefined;
 } s_var;
 
 typedef struct {
@@ -30,7 +30,7 @@ typedef struct {
 	uint64_t length;
 } s_vars;
 
-boolean new_var(void *value, const char *name, size_t name_size, type t);
+s_var *new_var(const char *name, size_t name_size, type t);
 boolean assign_value(s_var *var, void *value);
 void *get_var_i(uint64_t index);
 void *get_var(const char *name, size_t name_size);

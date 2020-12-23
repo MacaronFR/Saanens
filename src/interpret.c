@@ -1,33 +1,21 @@
 #include <interpret.h>
 
-boolean interpret_command(gchar *command){
-//	printf("command : %s\n", command);
-	if(is_declaration(command)){
-		declare(command);
-		if(is_affectation(command)){
-//			printf("affectation");
-		}
+extern s_vars vartab;
+
+boolean interpret_command(char *command){
+	if(command[strlen(command) - 1] != ';'){
+		fprintf(stderr, "Not terminated command");
+		return False;
+	}
+	add_history(command);
+//	printf("command : *%s*\n", command);
+	if(detect_keyword(command)){
+		printf("Keyword\n");
 	}
 	return False;
 }
 
-boolean is_declaration(gchar *command){
-	const char * exp = "^[ \t\n\r\f]*(int|float|char|string)[ \t\n\r\f]+[a-zA-Z][a-zA-Z0-9_]*";
-	if(regpresent(exp, command)){
-		return True;
-	}
-	return False;
-}
-
-boolean is_affectation(gchar *command){
-	const char * exp = "^([ \t\n\r\f]*(int|float|char|string)?[ \t\n\r\f]*)*[a-zA-Z][a-zA-Z0-9_]*[ \t\n\r\f]*=[ \t\n\r\f]*[^; \t\n\r\f]+;[ \t\n\r\f]*";
-	if(regpresent(exp,command)){
-		return True;
-	}
-	return False;
-}
-
-boolean s_testreg(const char* exp, gchar *command, regmatch_t **pmatch, int cflags){
+boolean s_testreg(const char* exp, char *command, regmatch_t **pmatch, int cflags){
 	regex_t reg;
 	int match;
 	regcomp(&reg, exp, cflags);
@@ -35,16 +23,18 @@ boolean s_testreg(const char* exp, gchar *command, regmatch_t **pmatch, int cfla
 		match = regexec(&reg, command, 0, NULL, 0);
 	}else{
 		if(pmatch == NULL){
-			fprintf(stderr, "In %s at line %d in function regretrieve : parameter pmatch must not be NULL");
+			fprintf(stderr, "In %s at line %d in function regretrieve : parameter pmatch must not be NULL",__FILE__,__LINE__);
 			exit(EXIT_FAILURE);
 		}
 		if(*pmatch != NULL){
 			free(*pmatch);
 		}
-		*pmatch = malloc(sizeof(pmatch) * reg.re_nsub);
+		*pmatch = malloc(sizeof(pmatch) * reg.re_nsub + 1);
+		if(pmatch == NULL){
+			return False;
+		}
 //		printf("groups = %d\n",reg.re_nsub);
-		match = regexec(&reg, command, reg.re_nsub, *pmatch, 0);
-
+		match = regexec(&reg, command, reg.re_nsub + 1, *pmatch, 0);
 	}
 	regfree(&reg);
 	if(match == 0)
@@ -52,34 +42,102 @@ boolean s_testreg(const char* exp, gchar *command, regmatch_t **pmatch, int cfla
 	return False;
 }
 
-boolean declare(gchar *command){
-	char *exp = "^[ \t\n\r\f]*((int|float|char|string))[ \t\n\r\f]+(([a-zA-Z][a-zA-Z0-9_]*))";
-	char *info[2];
+boolean declare(char *command){
+	char *exp = "^[ \t\n\r\f]*(int|float|char|string)[ \t\n\r\f]+([a-zA-Z][a-zA-Z0-9_]*)(?:[ \t\n\r\f]*=[ \t\n\r\f]*([^ \t\n\r\f]+)[ \t\n\r\f]*)?;";
+	char *info[3];
+	void *val;
+	s_var *nvar;
 	int start = 0;
 	int end = 0;
 	regmatch_t *pmatch = NULL;
-	regretrieve(exp,command,&pmatch);
-	for(int i = 2; i < 4; ++i){
-		start = pmatch[i].rm_so;
-		end = pmatch[i].rm_eo;
-		info[i-2] = malloc(end - start + 1);
-		strncpy(info[i-2], command + start, end - start);
-		info[i-2][end -start] = '\0';
-//		printf("match N %d : *%s*\n",i,info[i-2]);
-	}
-	type typeid = get_type_from_name(info[0], strlen(info[0]));
-	if(typeid != S_NOT) {
-		new_var(NULL, info[1], sizeof(info[1]), typeid);
-	}else{
-		perror("Error on type");
+	if(!regretrieve(exp,command,&pmatch)){
+		fprintf(stderr, "Invalid declaration");
 		return False;
 	}
+	for (int i = 1; i < 4; ++i) {
+		start = pmatch[i].rm_so;
+		end = pmatch[i].rm_eo;
+		info[i - 1] = malloc(end - start + 1);
+		strncpy(info[i - 1], command + start, end - start);
+		info[i - 1][end - start] = '\0';
+//		printf("match N %d : *%s*\n", i, info[i - 1]);
+	}
+	free(pmatch);
+	type typeid = get_type_from_name(info[0], strlen(info[0]));
+	free(info[0]);
+	if(typeid == S_NOT) {
+		free(info[1]);
+		free(info[2]);
+		fprintf(stderr,"Invalid type");
+		return False;
+	}
+	if(get_index(info[1],sizeof(info[1])) != vartab.length){
+		fprintf(stderr,"Variable %s already declared\n",info[1]);
+		free(info[1]);
+		free(info[2]);
+		return False;
+	}
+	nvar = new_var(info[1], sizeof(info[1]), typeid);
+	free(info[1]);
+	if(nvar == NULL) {
+		free(info[2]);
+		fprintf(stderr,"Error while declaring new variable");
+		return False;
+	}
+	if(*(info[2]) != '\0'){
+		val = check_value(info[2],typeid);
+		if(val == NULL){
+			free(info[2]);
+			fprintf(stderr, "Out of memory");
+			return False;
+		}
+		if(!assign_value(nvar,val)){
+			fprintf(stderr, "Can't assign value %s to var %s",info[2],nvar->name);
+			free(info[2]);
+			return False;
+		}
+	}
+	free(info[2]);
 	return True;
 }
 
-boolean affect(gchar *command){
-	char *exp = "([a-zA-Z][a-zA-Z0-9_]*)[ \n\r\t\f]*=[ \n\r\t\f]*([^; \n\r\t\f]+);";
-	regmatch_t *pmatch = NULL;
-	regretrieve(exp,command,&pmatch);
-	return True;
+boolean detect_keyword(char *command){
+	char *exptype = "^[ \t\n\r\f]*(int|float|char|string|bool)[ \t\n\r\f]+([a-zA-Z][a-zA-Z0-9]*)";
+	char *expcondboucle = "^[ \t\n\r\f]*(bouc|fromage|lait|chevre|troupeau|cassemire)[ \t\n\r\f]*[(].*[)]";
+	if(regpresent(exptype, command)) {
+		printf("Declaration\n");
+		if(declare(command)){
+			printf("Declared\n");
+		}
+		return True;
+	}else if(regpresent(expcondboucle,command)){
+		printf("Condition/Boucle\n");
+
+	}
+	return False;
+}
+
+void *check_value(char *value, type tid){
+	switch (tid){
+		case S_ENT: return (void*)check_int(value);
+		case S_FLOT: return (void*)check_double(value);
+	}
+}
+
+int *check_int(const char *value){
+	int *val = malloc(sizeof(int));
+	if(sscanf(value,"%d",val) == EOF){
+		free(val);
+		return NULL;
+	}
+	return val;
+}
+
+double *check_double(const char*value){
+	double *val = malloc(sizeof(double));
+	if(sscanf(value,"%lf",val) == EOF){
+		free(val);
+		return NULL;
+	}
+	return val;
 }

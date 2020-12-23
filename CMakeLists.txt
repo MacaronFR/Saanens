@@ -17,3 +17,4 @@ add_definitions(${GTK3_CFLAGS_OTHER})
 
 target_link_libraries(Saanens ${GTK3_LIBRARIES})
 target_link_libraries(Saanens -lregex)
+target_link_libraries(Saanens -lreadline)

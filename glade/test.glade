@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.36.0 -->
+<!-- Generated with glade 3.38.1 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
+  <object class="GtkStatusIcon">
+    <property name="visible">False</property>
+  </object>
   <object class="GtkTextBuffer" id="textbuffer_main">
     <property name="text" translatable="yes">&gt; </property>
   </object>
   <object class="GtkWindow" id="window_main">
     <property name="visible">True</property>
-    <property name="can_focus">True</property>
+    <property name="can-focus">True</property>
     <property name="title" translatable="yes">Saanens CLI</property>
-    <property name="window_position">center</property>
-    <property name="icon_name">computer-symbolic</property>
+    <property name="window-position">center</property>
+    <property name="icon-name">computer-symbolic</property>
     <signal name="destroy" handler="end_program" swapped="no"/>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkTextView" id="txtvw_main">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can-focus">True</property>
             <property name="buffer">textbuffer_main</property>
-            <property name="input_purpose">terminal</property>
+            <property name="input-purpose">terminal</property>
             <property name="monospace">True</property>
             <signal name="key-press-event" handler="keypressInterpretor" swapped="no"/>
           </object>
@@ -33,9 +36,6 @@
           </packing>
         </child>
       </object>
-    </child>
-    <child type="titlebar">
-      <placeholder/>
     </child>
     <style>
       <class name="main"/>

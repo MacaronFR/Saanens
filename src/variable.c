@@ -2,31 +2,34 @@
 
 s_vars vartab;
 
-boolean new_var(void *value, const char *name, size_t name_size, type t){
-	s_var *new_vars = malloc(sizeof(s_var) * (vartab.length+1));
-	s_var new_var;
-	new_var.name = malloc(name_size+1);
-
-	for(uint64_t i = 0; i < name_size; ++i){
-		new_var.name[i] = name[i];
+s_var *new_var(const char *name, size_t name_size, type t){
+	if(t == S_NOT)
+		return NULL;
+	s_var *new_vars = malloc(sizeof(s_var) * (vartab.length+1)); //new tab variable
+	if(new_vars == NULL)
+		return NULL;
+	s_var new_var; //new variable
+	new_var.name = malloc(name_size+1); //alloc name string
+	if(new_var.name == NULL){
+		free(new_vars);
+		return NULL;
 	}
-	new_var.name[name_size] = '\0';
-	new_var.type = t;
-	if(value != NULL) {
-		assign_value(&new_var, value);
-	}
-	for(uint64_t i = 0; i < vartab.length; ++i){
+	strncpy(new_var.name, name, name_size); //copy new name
+	new_var.name[name_size] = '\0'; //Null Byte at end
+	new_var.type = t; //assign type
+	new_var.undefined = True;
+	for(uint64_t i = 0; i < vartab.length; ++i) //copy ancient vartab to new one
 		new_vars[i] = vartab.tab[i];
-	}
-	new_vars[vartab.length] = new_var;
-	printf("*%d*\n",vartab.length);
-	vartab.length++;
-	free(vartab.tab);
-	vartab.tab = new_vars;
-	return True;
+	new_vars[vartab.length] = new_var; //add new var to vartab
+	//printf("*%d*\n",vartab.length);
+	vartab.length++; //increment vartab length
+	free(vartab.tab); //free ancient vartab ptr
+	vartab.tab = new_vars; //assign new vartab
+	return (vartab.tab + vartab.length - 1); //return address of the created var
 }
 
 boolean assign_value(s_var *var, void *value){
+	var->undefined = False;
 	switch (var->type) {
 		case S_ENT: var->value.ve = *((int*)value);break;
 		case S_FLOT: var->value.vf = *((double*)value);break;
@@ -39,8 +42,10 @@ boolean assign_value(s_var *var, void *value){
 
 uint64_t get_index(const char *name,size_t name_size){
 	uint64_t i = 0;
-	while(strcmp(name,vartab.tab[i].name) != 0 && i < vartab.length)
-		++i;
+	if(vartab.length > 0) {
+		while (i < vartab.length && strcmp(name, vartab.tab[i].name) != 0)
+			++i;
+	}
 	return i;
 }
 
