@@ -19,10 +19,14 @@ typedef struct{
 boolean interpret_command(char *command);
 boolean s_testreg(const char *exp, char *command, regmatch_t **pmatch,int cflags);
 boolean declare(char *command);
+boolean condboucle(char *command);
 boolean affect(char *command);
 boolean detect_keyword(char *command);
 void *check_value(char *value, type id);
 int *check_int(const char *value);
 double *check_double(const char*value);
+boolean process_pmatch(char *string, regmatch_t *pmatch, size_t nmatch, char **info);
+
+boolean chevre(char *arg);
 
 #endif //SAANENS_INTERPRET_H
