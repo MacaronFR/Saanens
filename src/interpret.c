@@ -8,9 +8,11 @@ boolean interpret_command(char *command){
 //		return False;
 //	}
 	add_history(command);
+	printf("historry = %d**\n",where_history());
 //	printf("command : *%s*\n", command);
 	if(detect_keyword(command)){
 		printf("Keyword\n");
+		return True;
 	}
 	return False;
 }
@@ -197,5 +199,6 @@ boolean chevre(char *arg){
 		}
 		printf("**i = %d**\n",i);
 	} while (i != 0 || strcmp(input,"finchevre;") != 0);
+	printf("chevreau history = %s**\n",chevreau->line);
 	return True;
 }
