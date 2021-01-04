@@ -8,7 +8,8 @@ boolean interpret_command(char *command){
 //		return False;
 //	}
 	add_history(command);
-	printf("historry = %d**\n",where_history());
+	if(history_length != 1)
+		history_offset++;
 //	printf("command : *%s*\n", command);
 	if(detect_keyword(command)){
 		printf("Keyword\n");
@@ -112,7 +113,7 @@ boolean detect_keyword(char *command){
 }
 
 boolean condboucle(char *command){
-	char *expcondition = "^[ \t\n\r\f]*(chevre|troupeau)[ \t\n\r\f]*[(][ \t\n\r\f]*(.+[^ \t\n\r\f])[ \t\n\r\f]*[)][ \t\n\r\f]*:[ \t\n\r\f]*$";
+	char *expcondition = "^[ \t\n\r\f]*(chevre|troupeau)[ \t\n\r\f]*[(][ \t\n\r\f]*(.*[^ \t\n\r\f])[ \t\n\r\f]*[)][ \t\n\r\f]*:[ \t\n\r\f]*$";
 	regmatch_t *pmatch = NULL;
 	char *info[2];
 	int start,end;
@@ -155,6 +156,7 @@ boolean process_pmatch(char *string ,regmatch_t *pmatch, size_t nmatch, char **i
 		start = pmatch[i].rm_so;
 		end = pmatch[i].rm_eo;
 		info[i-1] = malloc(end - start);
+		fflush(stdout);
 		strncpy(info[i-1], string + start, end - start);
 		info[i-1][end - start] = '\0';
 		printf("Match %d = *%s*\n",i,info[i-1]);
@@ -168,20 +170,24 @@ boolean chevre(char *arg){
 	HIST_ENTRY *brebis;
 	HIST_ENTRY *chevreau;
 	int i = 0;
-	while(strcmp(input, "chevreau:") != 0) {
-		fflush(stdin);
-		scanf("%[^\n]", input);
-		if (strcmp(input, "chevreau:") != 0) {
-			fprintf(stderr, "Needed chevreau after chevre\n");
-		}
+	fflush(stdin);
+	scanf("%[^\n]", input);
+	if (strcmp(input, "chevreau:") != 0) {
+		fprintf(stderr, "Needed chevreau after chevre\n");
+		return -1;
 	}
 	add_history(input);
+	history_offset++;
 	chevreau = current_history();
+	HISTORY_STATE *test = history_get_history_state();
+	printf("offset : %d\nsize : %d\n",test->offset,test->length);
+	printf("%s\n",chevreau->line);
 	do{
 		fflush(stdin);
 		scanf("%[^\n]",input);
 		// TODO verif si chaine commande valide
 		add_history(input);
+		history_offset++;
 		if(strcmp(input,"chevre") == 0){
 			++i;
 		}
@@ -199,6 +205,8 @@ boolean chevre(char *arg){
 		}
 		printf("**i = %d**\n",i);
 	} while (i != 0 || strcmp(input,"finchevre;") != 0);
-	printf("chevreau history = %s**\n",chevreau->line);
+	if(arg != NULL){
+	
+	}
 	return True;
 }
