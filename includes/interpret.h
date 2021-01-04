@@ -4,7 +4,7 @@
 #include <string.h>
 #include <variable.h>
 #include <regex.h>
-#include <readline/history.h>
+#include <history.h>
 
 #define regpresent(exp, command) (s_testreg(exp, command, NULL, REG_NOSUB | REG_EXTENDED))
 #define regretrieve(exp, command, pmatch) (s_testreg(exp, command, pmatch, REG_EXTENDED))

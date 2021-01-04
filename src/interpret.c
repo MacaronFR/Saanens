@@ -7,7 +7,6 @@ boolean interpret_command(char *command){
 //		fprintf(stderr, "Not terminated command\n");
 //		return False;
 //	}
-	add_history(command);
 //	printf("command : *%s*\n", command);
 	if(detect_keyword(command)){
 		printf("Keyword\n");

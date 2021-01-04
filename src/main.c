@@ -1,10 +1,10 @@
 #include <variable.h>
 #include <interpret.h>
+#include <history.h>
 
 extern s_vars vartab;
 
 int main(int argc,char **argv){
-	using_history();
 	char input[1024];
 	printf("Saanens V0.1\n");
 	while(strcmp(input,"exit") != 0){
