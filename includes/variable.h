@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum {False = 0, True = 1} boolean;
+typedef enum s_bool{False = 0, True = 1} boolean;
 
-typedef enum {S_NOT = 0, S_ENT = 1, S_FLOT = 2, S_CAR = 4, S_CHAINE = 8, S_TAB = 16} type;
+typedef enum s_type{S_NOT = 0, S_ENT = 1, S_FLOT = 2, S_CAR = 4, S_CHAINE = 8, S_TAB = 16} type;
 
 typedef union{
 	int ve;
