@@ -9,3 +9,4 @@
 cmake-build-debug/
 test.glade~
 /.idea/discord.xml
+bin/
