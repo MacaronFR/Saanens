@@ -5,7 +5,7 @@
 #include <regfunc.h>
 #include <stdio.h>
 #include <interpret.h>
-#define returnNillVar; return (s_var){S_NOT, "nill",.undefined = True};
+#define returnNillVar return (s_var){S_NOT, "nill",.undefined = True};
 
 
 typedef enum s_cat {S_LOG = 1, S_AFF = 2, S_COMP = 4, S_ADSB = 8, S_MOD = 16, S_MLDV = 32} s_cat;

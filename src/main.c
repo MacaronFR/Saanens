@@ -1,6 +1,5 @@
 #include <variable.h>
 #include <interpret.h>
-#include <history.h>
 
 extern s_vars vartab;
 
