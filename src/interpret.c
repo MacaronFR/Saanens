@@ -12,38 +12,14 @@ boolean interpret_command(char *command, boolean history){
 		if (history_length != 1)
 			history_offset++;
 	}
-	printf("command : *%s*\n", command);
+	slog("command : *%s*\n", command);
 	if(detect_keyword(command,history)){
-		printf("Keyword\n");
+		slog("Keyword\n");
+		return True;
+	}else if(detect_operation(command, history)){
+		slog("operation\n");
 		return True;
 	}
-	return False;
-}
-
-boolean s_testreg(const char* exp, char *command, regmatch_t **pmatch, int cflags){ //Fonction de test d'une expression régulière
-	regex_t reg;
-	int match;
-	regcomp(&reg, exp, cflags);
-	if(cflags & REG_NOSUB) {
-		match = regexec(&reg, command, 0, NULL, 0);
-	}else{
-		if(pmatch == NULL){
-			fprintf(stderr, "In %s at line %d in function regretrieve : parameter pmatch must not be NULL",__FILE__,__LINE__);
-			exit(EXIT_FAILURE);
-		}
-		if(*pmatch != NULL){
-			free(*pmatch);
-		}
-		*pmatch = malloc(sizeof(pmatch) * reg.re_nsub + 1);
-		if(pmatch == NULL){
-			return False;
-		}
-//		printf("groups = %d\n",reg.re_nsub);
-		match = regexec(&reg, command, reg.re_nsub + 1, *pmatch, 0);
-	}
-	regfree(&reg);
-	if(match == 0)
-		return True;
 	return False;
 }
 
@@ -102,13 +78,13 @@ boolean detect_keyword(char *command, boolean history){
 	char *exptype = "^[ \t\n\r\f]*(int|float|char|string|bool)[ \t\n\r\f]+([a-zA-Z][a-zA-Z0-9]*)"; //Regexp pour type
 	char *expcondboucle = "^[ \t\n\r\f]*(bouc|fromage|lait|chevre|troupeau|cassemire)[ \t\n\r\f]*[(].*[)][ \t\n\r\f]*:[ \t\n\r\f]*$"; //Regexp pour boucle/condition
 	if(regpresent(exptype, command)) { //Si type
-		printf("Declaration\n");
+		slog("Declaration\n");
 		if(declare(command)){
-			printf("Declared\n");
+			slog("Declared\n");
 		}
 		return True;
 	}else if(regpresent(expcondboucle,command)){ //Si cond/boucle
-		printf("Condition/Boucle\n");
+		slog("Condition/Boucle\n");
 		if(condboucle(command,history)){
 			return True;
 		}
@@ -118,6 +94,17 @@ boolean detect_keyword(char *command, boolean history){
 		char *info[1];
 		process_pmatch(command, match, 1, info);
 		print(info[0]);
+	}else if(strcmp(command, "clearlog;") == 0){
+		clearlog();
+	}
+	return False;
+}
+
+boolean detect_operation(char *command, boolean history){
+	char *reg = "[=/*+<>]|[&]{2}|[|]{2}|-";
+	if(regpresent(reg, command)){
+		s_var res = processOperation(command, 0);
+		return True;
 	}
 	return False;
 }
@@ -163,21 +150,6 @@ double *check_double(const char*value){ //verif valeur flottante
 }
 
 //TODO verif valeur char et string
-
-boolean process_pmatch(char *string ,regmatch_t *pmatch, size_t nmatch, char **info){ //Fonction pour récuperer les chaine a partir des match de regexp
-	int start,end;
-	for(int i = 1; i < nmatch + 1; ++i){
-		start = pmatch[i].rm_so;
-		end = pmatch[i].rm_eo;
-		info[i-1] = malloc(end - start);
-		fflush(stdout);
-		strncpy(info[i-1], string + start, end - start);
-		info[i-1][end - start] = '\0';
-		printf("Match %d = *%s*\n",i,info[i-1]);
-	}
-	free(pmatch);
-	return True;
-}
 
 boolean check_chevre(char *command){
 	
@@ -232,7 +204,7 @@ boolean chevre(const char *arg, boolean history){ //execute condition
 			if(brebis == -1)
 				brebis = where_history();
 			else{
-				printf("Erro brebis already declared");
+				printf("Error brebis already declared");
 				return False;
 			}
 		}
@@ -260,4 +232,18 @@ boolean chevre(const char *arg, boolean history){ //execute condition
 
 boolean syntax_check(char *command){
 
+}
+
+void trim(char *s){
+	int st = 0, ed = (int)strlen(s)-1;
+	while(s[st] == ' ' || s[st] == '\n' || s[st] == '\r' || s[st] == '\t' || s[st] == '\f'){
+		st++;
+	}
+	while((s[ed] == ' ' || s[ed] == '\n' || s[ed] == '\r' || s[ed] == '\t' || s[ed] == '\f') && ed > st){
+		ed--;
+	}
+	for(int i = 0; i < ed - st +1; ++i){
+		s[i] = s[i+st];
+	}
+	s[ed-st+1] = '\0';
 }

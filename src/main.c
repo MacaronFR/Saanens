@@ -4,6 +4,7 @@
 extern s_vars vartab;
 
 int main(int argc,char **argv){
+	clearlog();
 	using_history();
 	char input[1024];
 	printf("Saanens V0.1\n");

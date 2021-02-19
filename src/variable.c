@@ -49,7 +49,7 @@ uint64_t get_index(const char *name,size_t name_size){
 	return i;
 }
 
-void *get_var_i(uint64_t index){
+void *get_val_i(uint64_t index){
 	switch (vartab.tab[index].type){
 		case S_ENT: return &(vartab.tab[index].value.ve);
 		case S_FLOT: return &(vartab.tab[index].value.vf);
@@ -57,8 +57,8 @@ void *get_var_i(uint64_t index){
 	}
 }
 
-void *get_var(const char *name, size_t name_size){
-	return get_var_i(get_index(name,name_size));
+void *get_val(const char *name, size_t name_size){
+	return get_val_i(get_index(name,name_size));
 }
 
 type get_type_i(uint64_t index){
@@ -98,4 +98,17 @@ char *get_name_from_type(type t){
 		default: free(res);res = NULL;break;
 	}
 	return res;
+}
+
+s_var *get_var(const char *name, size_t name_size){
+	uint64_t i = get_index(name, name_size);
+	if(i == vartab.length){
+		return NULL;
+	}
+	return get_var_i(i);
+}
+
+s_var *get_var_i(uint64_t index){
+	if(index >= 0 && index < vartab.length)
+		return vartab.tab + index;
 }
