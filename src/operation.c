@@ -28,11 +28,14 @@ s_var processOperation(const char *command, s_cat lev){
 		res.value.ve = parseInt(command);
 		return res;
 	}else if(regpresent(regfloat, command)){
-	
+		res.type = S_FLOT;
+		res.value.vf = parseFloat(command);
 	}else if(regpresent(regvar, command)){
 		s_var *p = resolve_var(command);
 		return (p==NULL)?(s_var){S_ENT, "nill", .undefined=True}:*p;
 	}
+	slog("Error unrecognized command %s", command);
+	returnNillVar;
 }
 
 boolean check_parenthese(const char *l){
@@ -40,6 +43,7 @@ boolean check_parenthese(const char *l){
 		char *reg = "[(].+[)]";
 		return regpresent(reg, l);
 	}
+	return False;
 }
 
 s_var execute_parenthese(char *l){
@@ -56,7 +60,7 @@ s_var execute_parenthese(char *l){
 			}
 		}
 	}
-	return (s_var){S_NOT, "nill",.undefined = True};
+	returnNillVar;
 }
 
 s_var processLog(const char *c){
@@ -69,20 +73,24 @@ s_var processLog(const char *c){
 		trim(info[3]);
 		s_var op1 = processOperation(info[0], S_LOG);
 		s_var op2 = processOperation(info[3], S_LOG);
+		if (strcmp(op1.name, "nill") == 0 || strcmp(op2.name, "nill") == 0){
+			returnNillVar;
+		}
 		s_op operator = 0;
 		if(strcmp(info[1], "||") == 0){
 			operator = S_OR;
 		}else if(strcmp(info[1], "&&") == 0){
 			operator = S_AND;
 		}
-		s_var res = {S_BOOL, "temp", .value.vb = True};
+		s_var res = {S_BOOL, "temp", .value.vb = True, .undefined = True};
 		if(op1.type == S_ENT || op1.type == S_BOOL){
+			res.undefined = False;
 			res.value.vb = doIntOp(op1.value.ve, op2.value.ve, operator);
 		}
 		//printf("%d, %d op = %d and res = %d\n",op1.value.ve, op2.value.ve, operator, res.value.vb);
 		return res;
 	}
-	return (s_var){S_NOT, "nill",.undefined = True};
+	returnNillVar;
 }
 
 s_var processAff(const char *c){
@@ -93,14 +101,19 @@ s_var processAff(const char *c){
 		process_pmatch(c, pmatch, 2, match);
 		s_var *op1 = resolve_var(match[0]);
 		s_var op2 = processOperation(match[1], S_AFF);
+		if (op1 == NULL || strcmp(op1->name, "nill") == 0 || strcmp(op2.name, "nill") == 0){
+			returnNillVar;
+		}
 		freematch(match, 2);
 		if(op1->type == op2.type){
 			if(op1->type == S_ENT){
 				op1->value.ve = op2.value.ve;
 			}
+			op1->undefined = False;
 			return *op1;
 		}
 	}
+	returnNillVar;
 }
 
 s_var processComp(const char *c){
@@ -127,16 +140,21 @@ s_var processComp(const char *c){
 		trim(match[2]);
 		s_var op1 = processOperation(match[0], S_COMP);
 		s_var op2 = processOperation(match[2], S_COMP);
+		//if (strcmp(op1.name, "nill") == 0 || strcmp(op2.name, "nill") == 0){
+			//returnNillVar;
+		//}
 		freematch(match,3);
 		s_var res;
 		res.type = S_BOOL;
+		res.undefined = True;
 		if(op1.type == S_ENT || op2.type == S_BOOL) {
 			res.value.vb = doIntOp(op1.value.ve, op2.value.ve, operator);
+			res.undefined = False;
 		}
 		slog("%d, %d op = %d and res = %d\n",op1.value.ve, op2.value.ve, operator, res.value.vb);
 		return res;
 	}
-	return (s_var){S_NOT, "nill",.undefined = True};
+	returnNillVar;
 }
 
 s_var processAddSub(const char *c){
@@ -156,6 +174,10 @@ s_var processAddSub(const char *c){
 		}
 		s_var op1 = processOperation(match[0], S_ADSB);
 		s_var op2 = processOperation(match[2], S_ADSB);
+		if(op1.undefined || op2.undefined){
+			slog("ivi");
+			returnNillVar;
+		}
 		freematch(match, 3);
 		s_var res = {.undefined = False, .type = S_ENT};
 		if(op1.type == S_ENT || op1.type == S_BOOL) {
@@ -164,7 +186,7 @@ s_var processAddSub(const char *c){
 		slog("%d, %d op = %d and res = %d\n", op1.value.ve, op2.value.ve, operator, res.value.vb);
 		return res;
 	}
-	return (s_var){S_NOT, "nill",.undefined = True};
+	returnNillVar;
 }
 
 s_var processMod(const char *c){
@@ -178,15 +200,21 @@ s_var processMod(const char *c){
 		trim(match[2]);
 		s_var op1 = processOperation(match[0], S_MOD);
 		s_var op2 = processOperation(match[2], S_MOD);
+		if (strcmp(op1.name, "nill") == 0 || strcmp(op2.name, "nill") == 0){
+			returnNillVar;
+		}
 		freematch(match, 3);
 		s_var res;
+		res.undefined = True;
 		if(op1.type == S_ENT){
 			res.type = S_ENT;
+			res.undefined = False;
 			res.value.ve = doIntOp(op1.value.ve,op2.value.ve,S_MDL);
 		}
 		slog("%d, %d op = %d and res = %d\n", op1.value.ve, op2.value.ve, S_MDL, res.value.ve);
 		return res;
 	}
+	returnNillVar;
 }
 
 s_var processMulDiv(const char *c){
@@ -200,6 +228,9 @@ s_var processMulDiv(const char *c){
 		trim(match[2]);
 		s_var op1 = processOperation(match[0],S_MLDV);
 		s_var op2 = processOperation(match[2],S_MLDV);
+		if (op1.undefined || op2.undefined){
+			returnNillVar;
+		}
 		s_op operator = 0;
 		if(strcmp(match[1], "/") == 0){
 			operator = S_DIV;
@@ -210,21 +241,27 @@ s_var processMulDiv(const char *c){
 		s_var res;
 		if(op1.type == S_ENT){
 			res.type = S_ENT;
+			res.undefined = False;
 			res.value.ve = doIntOp(op1.value.ve, op2.value.ve, operator);
 		}
 		return res;
 	}
+	returnNillVar;
 }
 
 s_var *resolve_var(const char *c){
 	char *var = malloc(strlen(c)+1);
 	strcpy(var, c);
 	trim(var);
-	return get_var(var, strlen(var));
+	s_var *p = get_var(var, strlen(var));
+	if(p == NULL){
+		slog("Error no variable named %s",var);
+	}
+	return p;
 }
 
 int doIntOp(int op1, int op2, s_op op){
-	slog("op 1 = %d, op 2 = %d, operator = %d op1%%op2 = %d\n",op1,op2,op,op1%op2);
+	slog("op 1 = %d, op 2 = %d, operator = %d op1%%op2 = %d\n",op1,op2,op);
 	switch (op) {
 		case S_OR: return (op1 || op2)?True:False;
 		case S_AND: return (op1 && op2)?True:False;
@@ -246,4 +283,9 @@ int doIntOp(int op1, int op2, s_op op){
 int parseInt(const char *n){
 	slog("str = %s. int = %d\n",n, atoi(n));
 	return atoi(n);
+}
+
+double parseFloat(const char *n){
+	slog("str = %s. float = %lf\n",n, atof(n));
+	return atof(n);
 }

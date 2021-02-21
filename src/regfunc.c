@@ -16,6 +16,7 @@ boolean s_testreg(const char* exp, const char *command, regmatch_t **pmatch, int
 		}
 		*pmatch = malloc(sizeof(pmatch) * reg.re_nsub + 1);
 		if(pmatch == NULL){
+			regfree(&reg);
 			return False;
 		}
 //		printf("groups = %d\n",reg.re_nsub);

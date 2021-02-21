@@ -1,26 +1,21 @@
 #include <interpret.h>
 
 extern s_vars vartab;
+extern FILE *in;
 
 boolean interpret_command(char *command, boolean history){
-//	if(command[strlen(command) - 1] != ';'){
-//		fprintf(stderr, "Not terminated command\n");
-//		return False;
-//	}
-	if(!history) { //Si on prend de l'entré et pas de l'historique
-		add_history(command);
-		if (history_length != 1)
-			history_offset++;
-	}
+	trim(command);
 	slog("command : *%s*\n", command);
-	if(detect_keyword(command,history)){
+	if (detect_keyword(command, history)) {
 		slog("Keyword\n");
 		return True;
-	}else if(detect_operation(command, history)){
+	} else if (detect_operation(command, history)) {
 		slog("operation\n");
 		return True;
+	} else if (strcmp(command, "exit;") == 0) {
+		return False;
 	}
-	return False;
+	return True;
 }
 
 boolean declare(char *command){ //Fonction declaration de variable
@@ -88,13 +83,14 @@ boolean detect_keyword(char *command, boolean history){
 		if(condboucle(command,history)){
 			return True;
 		}
+		return True;
 	}else if(regpresent("^print[ \n\t\r\f]*\\([ \n\t\r\f]*([^)]+)[ \n\t\r\f]*\\);$",command)){//Si print
 		regmatch_t *match = NULL;
 		regretrieve("^print[ \n\t\r\f]*\\([ \n\t\r\f]*([^)]+)[ \n\t\r\f]*\\);$", command, &match);
 		char *info[1];
 		process_pmatch(command, match, 1, info);
 		print(info[0]);
-	}else if(strcmp(command, "clearlog;") == 0){
+	}else if(strcmp(command, "clearlog") == 0){
 		clearlog();
 	}
 	return False;
@@ -103,6 +99,9 @@ boolean detect_keyword(char *command, boolean history){
 boolean detect_operation(char *command, boolean history){
 	char *reg = "[=/*+<>]|[&]{2}|[|]{2}|-";
 	if(regpresent(reg, command)){
+		if(command[strlen(command)-1] == ';'){
+			command[strlen(command)-1] = '\0';
+		}
 		s_var res = processOperation(command, 0);
 		return True;
 	}
@@ -159,35 +158,51 @@ boolean check_chevre(char *command){
 }
 
 boolean chevre(const char *arg, boolean history){ //execute condition
-	char *reg = "^[ \t\n\r\f]*(chevre|breche)[ \t\n\r\f]*[(][ \t\n\r\f]*(.*[^ \t\n\r\f])[ \t\n\r\f]*[)][ \t\n\r\f]*:[ \t\n\r\f]*$";
-	char input[1024];
+	char reg[] = "^(chevre|breche).*[(](.*)[)].*:";
 	int brebis = -1, chevreau, finchevre;
 	int i = 0;
+	char **cmd;
+	int nbcmd;
 	if(!history) { //si pas de recherche dans l'historique recup depuis le stdin
-		fflush(stdin);
-		scanf("%[^\n]", input);
-		add_history(input);
-		history_offset++;
+		cmd = NULL;
+		nbcmd = getinput(in, &cmd);
+		for(i = 0; i < nbcmd; i++){
+			add_history(cmd[i]);
+			history_offset++;
+		}
+		i = 0;
 	}else{ //sino on recup depuis l'historique
-		strcpy(input,next_history()->line);
-		printf("%s**\n",input);
+		cmd = malloc(sizeof(char *));
+		cmd[0] = malloc(strlen(next_history()->line)+1);
+		strcpy(cmd[0],current_history()->line);
+		//printf("%s**\n",input);
 	}
-	if (strcmp(input, "chevreau:") != 0) {
+	if (strcmp(cmd[0], "chevreau:") != 0) {
 		fprintf(stderr, "Needed chevreau after chevre\n");
 		return -1;
 	}
 	chevreau = where_history();
 	do{
-		if(!history) {
-			fflush(stdin);
-			scanf("%[^\n]", input);
-			add_history(input);
-			history_offset++;
-		}else{
-			strcpy(input, next_history()->line);
+		if(history_offset == history_length-1) {
+			nbcmd = 0;
+			while(nbcmd == 0){
+				cmd = NULL;
+				nbcmd = getinput(in, &cmd);
+				slog("inputOK;\n");
+				for (int j = 0; j < nbcmd; j++) {
+					add_history(cmd[j]);
+					free(cmd[j]);
+				}
+				slog("inputOK2;\n");
+				free(cmd);
+				cmd = NULL;
+			}
 		}
-		if(regpresent(reg, input)){
-			if(regpresent("breche",input)){
+		cmd = malloc(sizeof(char *));
+		cmd[0] = malloc(strlen(next_history()->line));
+		strcpy(cmd[0], current_history()->line);
+		if(regpresent(reg, cmd[0])){
+			if(regpresent("breche", cmd[0])){
 				if(i == 0) {
 					if (brebis == -1)
 						brebis = where_history();
@@ -200,7 +215,7 @@ boolean chevre(const char *arg, boolean history){ //execute condition
 			++i;
 			//printf("ici i = %d\n",i);
 		}
-		if(strcmp(input,"brebis:") == 0 && i == 0){
+		if(strcmp(cmd[0],"brebis:") == 0 && i == 0){
 			if(brebis == -1)
 				brebis = where_history();
 			else{
@@ -208,21 +223,35 @@ boolean chevre(const char *arg, boolean history){ //execute condition
 				return False;
 			}
 		}
-		if(strcmp(input, "finchevre;") == 0 && i != 0){
+		if(strcmp(cmd[0], "finchevre;") == 0 && i != 0){
 			--i;
-			input[0] = '\0';
+			cmd[0][0] = '\0';
 		}
-	} while (i != 0 || strcmp(input,"finchevre;") != 0);
+	} while (i != 0 || strcmp(cmd[0],"finchevre;") != 0);
 	finchevre = where_history();
-	if(arg != NULL){
+	s_var cond = processOperation(arg,0);
+	slog("undefiend ? %hhd and value(boolean) %hhd",cond.undefined, cond.value.vb);
+	if(cond.undefined){
+		return False;
+	}
+	if( cond.value.vb){
 		history_set_pos(chevreau+1);
-		while (where_history() != finchevre || where_history() != brebis) {
-			printf("ici**");
+		while (where_history() != finchevre && where_history() != brebis) {
+			slog("%d*%d*",where_history(),finchevre);
 			if(!interpret_command(current_history()->line, True)){
-				history_set_pos(where_history());
+				history_set_pos(finchevre);
 				return False;
 			}
 			printf("%s*\n",current_history()->line);
+			history_set_pos(where_history()+1);
+		}
+	}else if(brebis != -1){
+		history_set_pos(brebis+1);
+		while(where_history() != finchevre){
+			if(!interpret_command(current_history()->line, True)){
+				history_set_pos(finchevre);
+				return False;
+			}
 			history_set_pos(where_history()+1);
 		}
 	}

@@ -5,7 +5,7 @@
 #include <regfunc.h>
 #include <stdio.h>
 #include <interpret.h>
-#define returnNillVar return (s_var){S_NOT, "nill",.undefined = True};
+#define returnNillVar return (s_var){S_NOT, "nill",.undefined = True}
 
 
 typedef enum s_cat {S_LOG = 1, S_AFF = 2, S_COMP = 4, S_ADSB = 8, S_MOD = 16, S_MLDV = 32} s_cat;
@@ -23,5 +23,6 @@ s_var processMulDiv(const char *command);
 s_var *resolve_var(const char *command);
 int doIntOp(int op1, int op2, s_op);
 int parseInt(const char *number);
+double parseFloat(const char *number);
 
 #endif //SAANENS_OPERATION_H
