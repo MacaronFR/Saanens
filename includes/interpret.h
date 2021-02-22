@@ -17,8 +17,8 @@ boolean detect_operation(char *command, boolean history);
 void *check_value(char *value, type id);
 int *check_int(const char *value);
 double *check_double(const char*value);
-boolean syntax_check(char *command);
-boolean chevre(const char *arg, boolean history);
+char *check_car(const char*value);
+boolean chevre(char *arg, boolean history);
 void trim(char *string);
 
 #endif //SAANENS_INTERPRET_H

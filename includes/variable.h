@@ -31,7 +31,7 @@ typedef struct s_vars{
 } s_vars;
 
 s_var *new_var(const char *name, size_t name_size, type t);
-boolean assign_value(s_var *var, void *value);
+boolean assign_value(s_var *var, s_value value);
 void *get_val_i(uint64_t index);
 void *get_val(const char *name, size_t name_size);
 uint64_t get_index(const char *name, size_t name_size);

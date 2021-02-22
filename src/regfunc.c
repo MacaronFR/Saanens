@@ -8,18 +8,17 @@ boolean s_testreg(const char* exp, const char *command, regmatch_t **pmatch, int
 		match = regexec(&reg, command, 0, NULL, 0);
 	}else{
 		if(pmatch == NULL){
-			fprintf(stderr, "In %s at line %d in function regretrieve : parameter pmatch must not be NULL",__FILE__,__LINE__);
+			slog("In %s at line %d in function regretrieve : parameter pmatch must not be NULL",__FILE__,__LINE__);
 			exit(EXIT_FAILURE);
 		}
 		if(*pmatch != NULL){
 			free(*pmatch);
 		}
-		*pmatch = malloc(sizeof(pmatch) * reg.re_nsub + 1);
-		if(pmatch == NULL){
+		*pmatch = calloc(reg.re_nsub + 2, sizeof(regmatch_t));
+		if(*pmatch == NULL){
 			regfree(&reg);
 			return False;
 		}
-//		printf("groups = %d\n",reg.re_nsub);
 		match = regexec(&reg, command, reg.re_nsub + 1, *pmatch, 0);
 	}
 	regfree(&reg);
@@ -33,12 +32,42 @@ boolean process_pmatch(const char *string ,regmatch_t *pmatch, size_t nmatch, ch
 	for(int i = 1; i < nmatch + 1; ++i){
 		start = pmatch[i].rm_so;
 		end = pmatch[i].rm_eo;
-		info[i-1] = malloc(end - start);
+		info[i-1] = malloc(end - start + 1);
 		fflush(stdout);
-		strncpy(info[i-1], string + start, end - start);
+		strncpy(info[i-1], string + start, 	end - start);
 		info[i-1][end - start] = '\0';
-		slog("Match %d = *%s*\n",i,info[i-1]);
+//		slog("Match %d = *%s*\n",i,info[i-1]);
 	}
 	free(pmatch);
+	return True;
+}
+
+boolean regparenthesis(const char *input, char **match){
+	int len = strlen(input);
+	int count = 0;
+	int i;
+	const char *first;
+	boolean present = False;
+	for(i =0; i < len; ++i){
+		if(input[i] == '('){
+			++count;
+			if(!present){
+				first = input + i + 1;
+				present = True;
+			}
+		}
+		if(input[i] == ')'){
+			--count;
+		}
+		if(present && count == 0){
+			break;
+		}
+	}
+	if(i == len){
+		return False;
+	}
+	*match = malloc(i - (first - input)+1);
+	strncpy(*match, first, i - (first - input));
+	(*match)[i - (first - input)] = '\0';
 	return True;
 }

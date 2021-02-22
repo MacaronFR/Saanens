@@ -28,13 +28,14 @@ s_var *new_var(const char *name, size_t name_size, type t){
 	return (vartab.tab + vartab.length - 1); //return address of the created var
 }
 
-boolean assign_value(s_var *var, void *value){
+boolean assign_value(s_var *var, s_value value){
 	var->undefined = False;
 	switch (var->type) {
-		case S_ENT: var->value.ve = *((int*)value);break;
-		case S_FLOT: var->value.vf = *((double*)value);break;
-		case S_CAR: var->value.vc = *((char*)value);break;
-		case S_CHAINE: var->value.vs = malloc(strlen((char*)value));strcpy(var->value.vs, (char*)value);break;
+		case S_ENT: var->value.ve = value.ve;break;
+		case S_FLOT: var->value.vf = value.vf;break;
+		case S_CAR: var->value.vc = value.vc;break;
+		case S_CHAINE: var->value.vs = value.vs;break;
+		case S_BOOL: var->value.vb = value.vb;
 		default: return False;
 	}
 	return True;
@@ -79,8 +80,10 @@ type get_type_from_name(const char *name, size_t name_size){
 		return S_FLOT;
 	}else if(strcmp(str, "char") == 0){
 		return S_CAR;
-	}else if(strcmp(str, "string") == 0){
+	}else if(strcmp(str, "string") == 0) {
 		return S_CHAINE;
+	}else if(strcmp(str, "bool") == 0){
+		return S_BOOL;
 	}else if(strcmp(str, "tab") == 0){
 		return S_TAB;
 	}
@@ -94,6 +97,7 @@ char *get_name_from_type(type t){
 		case S_FLOT: strcpy(res,"float");break;
 		case S_CAR: strcpy(res,"char");break;
 		case S_CHAINE: strcpy(res,"string");break;
+		case S_BOOL: strcpy(res, "bool");break;
 		case S_TAB: strcpy(res,"tab");break;
 		default: free(res);res = NULL;break;
 	}

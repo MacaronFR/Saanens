@@ -1,7 +1,7 @@
 #include <function.h>
 
 void print(char *string){
-	printf("%s",string);
+	slog("%s",string);
 }
 
 void exitSaanens(){
@@ -33,11 +33,12 @@ int getinput(FILE *file, char ***input){
 	char *lineend;
 	char *command = NULL;
 	char *start;
-	char *temp;
 	int size = 0;
 	int nbcmd = 0;
 	while(fgets(buffer, sizeof(buffer), file) != 0){
-		if(buffer[strlen(buffer) - 1] == '\n'){
+		if(buffer[strlen(buffer) - 2] == '\r'){
+			buffer[strlen(buffer) - 2] = '\0';
+		}else if(buffer[strlen(buffer) - 1] == '\n'){
 			buffer[strlen(buffer) - 1] = '\0';
 		}
 		if (strlen(buffer) == 0){
@@ -60,7 +61,6 @@ int getinput(FILE *file, char ***input){
 				++nbcmd;
 				*input = realloc(*input, sizeof(char *) * nbcmd);
 				(*input)[nbcmd - 1] = command;
-				slog("input command = *%s*\n",command);
 				command = NULL;
 				start += size + 1;
 				if(lineend == buffer + strlen(buffer) - 1){
