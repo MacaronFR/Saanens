@@ -1,12 +1,9 @@
 #include <condboucle.h>
 
-extern FILE *in;
-
 boolean condboucle(char *command, boolean history){
 	char *expcondboucle = "^(chevre|fromage)[ \t\n\r\f]*[(][ \t\n\r\f]*(.*[^ \t\n\r\f])[ \t\n\r\f]*[)][ \t\n\r\f]*:$"; //regexp pour condition
 	regmatch_t *pmatch = NULL;
 	char *info[2];
-	int start,end;
 	regretrieve(expcondboucle,command,&pmatch);
 	process_pmatch(command,pmatch,2,info);
 	if(strcmp(info[0], "chevre") == 0){//si if
@@ -46,10 +43,17 @@ boolean chevre(char *arg, boolean history){ //execute condition
 	}
 	if (strcmp(cmd[0], "chevreau:") != 0) {
 		fprintf(stderr, "Needed chevreau after chevre\n");
+		free(cmd);
 		return -1;
 	}
+	free(cmd);
+	cmd = NULL;
 	chevreau = where_history();
 	do{
+		if(cmd != NULL){
+			free(cmd[0]);
+			free(cmd);
+		}
 		if(history_offset == history_length-1) {
 			nbcmd = 0;
 			while(nbcmd == 0){
@@ -64,7 +68,7 @@ boolean chevre(char *arg, boolean history){ //execute condition
 			}
 		}
 		cmd = malloc(sizeof(char *));
-		cmd[0] = malloc(strlen(next_history()->line));
+		cmd[0] = malloc(strlen(next_history()->line)+1);
 		strcpy(cmd[0], current_history()->line);
 		if(regpresent(reg, cmd[0])){
 			++i;
@@ -87,14 +91,14 @@ boolean chevre(char *arg, boolean history){ //execute condition
 	if(cond.undefined){
 		return False;
 	}
-	if( cond.value.vb){
+	castBool(&cond);
+	if(cond.value.vb){
 		history_set_pos(chevreau+1);
 		while (where_history() != finchevre && where_history() != brebis) {
 			if(!interpret_command(current_history()->line, True)){
 				history_set_pos(finchevre);
 				return False;
 			}
-			printf("%s*\n",current_history()->line);
 			history_set_pos(where_history()+1);
 		}
 	}else if(brebis != -1){
@@ -114,13 +118,16 @@ boolean chevre(char *arg, boolean history){ //execute condition
 boolean fromage(char *arg, boolean history){
 	int fromage, fin;
 	int i = 0;
-	char **cmd;
+	char **cmd = NULL;
 	char *histline;
 	int nbcmd;
 	s_var cond;
 	fromage = where_history() + 1;
-	char *test = history_get(fromage)->line;
 	do{
+		if(cmd != NULL) {
+			free(cmd[0]);
+			free(cmd);
+		}
 		if(history_offset == history_length-1) {
 			nbcmd = 0;
 			while(nbcmd == 0){
@@ -135,7 +142,7 @@ boolean fromage(char *arg, boolean history){
 			}
 		}
 		cmd = malloc(sizeof(char *));
-		cmd[0] = malloc(strlen(next_history()->line));
+		cmd[0] = malloc(strlen(next_history()->line) + 1);
 		strcpy(cmd[0], current_history()->line);
 		if(strcmp(cmd[0], "finfromage;") == 0 && i != 0){
 			--i;
@@ -146,16 +153,27 @@ boolean fromage(char *arg, boolean history){
 			continue;
 		}
 	}while(i != 0 || strcmp(cmd[0], "finfromage;") != 0);
+	free(cmd[0]);
+	free(cmd);
 	fin = where_history()+1;
 	cond = processOperation(arg, 0);
+	if(cond.undefined){
+		return False;
+	}
 	castBool(&cond);
 	while(cond.value.vb){
 		for(i = fromage + 1; i < fin; ++i){
-			histline = malloc(strlen(history_get(i)->line));
+			histline = malloc(strlen(history_get(i)->line)+1);
 			strcpy(histline, history_get(i)->line);
-			interpret_command(histline, True);
+			if(!interpret_command(histline, True)){
+				free(histline);
+				return False;
+			}
 		}
 		cond = processOperation(arg, 0);
+		if(cond.undefined){
+			return False;
+		}
 		castBool(&cond);
 	}
 	return True;
