@@ -103,4 +103,3 @@ double doFloatOp(double op1, double op2, s_op op){
 		default: return 0.;
 	}
 }
-

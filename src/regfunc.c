@@ -42,7 +42,7 @@ boolean process_pmatch(const char *string ,regmatch_t *pmatch, size_t nmatch, ch
 	return True;
 }
 
-boolean regparenthesis(const char *input, char **match){
+boolean regparenthesis(const char *input, char **match, int **se){
 	int len = strlen(input);
 	int count = 0;
 	int i;
@@ -65,6 +65,10 @@ boolean regparenthesis(const char *input, char **match){
 	}
 	if(i == len){
 		return False;
+	}
+	if(se != NULL) {
+		(*se)[0] = first - input;
+		(*se)[1] = i;
 	}
 	*match = malloc(i - (first - input)+1);
 	strncpy(*match, first, i - (first - input));

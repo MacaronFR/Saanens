@@ -73,3 +73,24 @@ void trim(char *s){
 	}
 	s[ed-st+1] = '\0';
 }
+
+
+boolean preparePrint(char *to_print){
+	regmatch_t *pmatch = NULL;
+	char *info[1];
+	s_var vtoprint;
+	if (regretrieve("[(](.+)[)]", to_print, &pmatch)) {
+		process_pmatch(to_print, pmatch, 1, info);
+		vtoprint = processOperation(info[0], 0);
+		if (vtoprint.undefined) {
+			return False;
+		}
+		if (vtoprint.type != S_CHAINE) {
+			castVar(&vtoprint, S_CHAINE);
+		}
+		print(vtoprint.value.vs);
+		free(vtoprint.value.vs);
+		return True;
+	}
+	return False;
+}

@@ -19,5 +19,6 @@ char *get_name_from_type(type t);
 s_var *get_var(const char *name, size_t name_size);
 s_var *get_var_i(uint64_t index);
 char *varToString(s_var var);
+void destroy_vars();
 
 #endif //SAANENS_VARIABLE_H

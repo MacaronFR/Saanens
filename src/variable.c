@@ -21,7 +21,6 @@ s_var *new_var(const char *name, size_t name_size, type t){
 	for(uint64_t i = 0; i < vartab.length; ++i) //copy ancient vartab to new one
 		new_vars[i] = vartab.tab[i];
 	new_vars[vartab.length] = new_var; //add new var to vartab
-	//printf("*%d*\n",vartab.length);
 	vartab.length++; //increment vartab length
 	free(vartab.tab); //free ancient vartab ptr
 	vartab.tab = new_vars; //assign new vartab
@@ -126,10 +125,19 @@ char *varToString(s_var v){
 		case S_FLOT: strcpy(format, "%lf");sprintf(input, format, v.value.vf);break;
 		case S_BOOL: strcpy(format, "%hhd");sprintf(input, format, v.value.vb);break;
 		case S_CAR: strcpy(format, "%c");sprintf(input, format, v.value.vc);break;
-		case S_CHAINE: v.value.vs;
+		case S_CHAINE: return v.value.vs;
 		default: return NULL;
 	}
 	ret = malloc(strlen(input) + 1);
 	strcpy(ret, input);
 	return ret;
+}
+
+void destroy_vars(){
+	for(int i = 0; i < vartab.length; ++i){
+		free(vartab.tab[i].name);
+		if(vartab.tab[i].type == S_CHAINE){
+			free(vartab.tab[i].value.vs);
+		}
+	}
 }

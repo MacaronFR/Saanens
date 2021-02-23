@@ -9,6 +9,7 @@ boolean interpret_command(char *command, boolean history){
 	} else if (detect_operation(command, history)) {
 		return True;
 	} else if (strcmp(command, "exit;") == 0) {
+		exitSaanens();
 		return False;
 	}
 	return True;
@@ -55,7 +56,7 @@ boolean declare(char *command){ //Fonction declaration de variable
 			return False;
 		}
 		if(val.type != nvar->type){
-			cast(&val, nvar->type);
+			castVar(&val, nvar->type);
 		}
 		if(!assign_value(nvar,val.value)){ //Affectation de la variable
 			slog("Can't assign value %s to var %s\n",info[2],nvar->name);
@@ -70,9 +71,9 @@ boolean declare(char *command){ //Fonction declaration de variable
 }
 
 boolean detect_keyword(char *command, boolean history){
-	char *exptype = "^[ \t\n\r\f]*(int|float|char|string|bool)[ \t\n\r\f]+([a-zA-Z][a-zA-Z0-9]*)"; //Regexp pour type
-	char *expcondboucle = "^[ \t\n\r\f]*(bouc|fromage|lait|chevre|troupeau|cassemire)[ \t\n\r\f]*[(].*[)][ \t\n\r\f]*:[ \t\n\r\f]*$"; //Regexp pour boucle/condition
-	if(regpresent(exptype, command)) { //Si type
+	char *regdeclare = "^[ \t\n\r\f]*(int|float|char|string|bool)[ \t\n\r\f]+([a-zA-Z][a-zA-Z0-9]*)"; //Regexp pour type
+	char *expcondboucle = "^[ \t\n\r\f]*(fromage|chevre)[ \t\n\r\f]*[(].*[)][ \t\n\r\f]*:[ \t\n\r\f]*$"; //Regexp pour boucle/condition
+	if(regpresent(regdeclare, command)) { //Si type
 		if(declare(command)){
 		}
 		return True;
@@ -81,31 +82,16 @@ boolean detect_keyword(char *command, boolean history){
 			return True;
 		}
 		return True;
-	}else if(regpresent("^print[ \n\t\r\f]*[(]([^)]+)[)][ \n\t\r\f]*;$",command)){//Si print
-		regmatch_t *pmatch = NULL;
-		char *info[1];
-		s_var toprint;
-		if(regretrieve("^print[ \n\t\r\f]*[(]([^)]+)[)][ \n\t\r\f]*;$", command, &pmatch)){
-			process_pmatch(command, pmatch, 1, info);
-			toprint = processOperation(info[0], 0);
-			if(toprint.undefined){
-				return False;
-			}
-			if(toprint.type != S_CHAINE){
-				cast(&toprint, S_CHAINE);
-			}
-			print(toprint.value.vs);
-			free(toprint.value.vs);
-			return True;
-		}
-	}else if(strcmp(command, "clearlog") == 0){
+	}else if(regpresent("^print[ \n\t\r\f]*[(](.+)[)][ \n\t\r\f]*;$",command)){//Si print
+		return preparePrint(command);
+	}else if(strcmp(command, "clearlog") == 0) {
 		clearlog();
 	}
 	return False;
 }
 
 boolean detect_operation(char *command, boolean history){
-	char *reg = "[=/*+<>&|-]";
+	char *reg = "[=/*+<>&|()-]";
 	if(regpresent(reg, command)){
 		if(command[strlen(command)-1] == ';'){
 			command[strlen(command)-1] = '\0';
@@ -131,43 +117,39 @@ s_var processOperation(const char *command, s_cat lev){
 	char *regbool = "^True|False$";
 	char *regvar = "[a-zA-Z][a-zA-Z0-9_]*";
 	s_var res;
-	while(check_parenthese(command)){
-		char *tmp = execute_parenthese(command);
-		if(tmp == NULL){
-			returnNillVar;
-		}
-		command = tmp;
-	}
-	if(regpresent(reglog, command) && lev <= S_LOG){
-		return processLog(command);
-	}else if(regpresent(regaff, command) && lev <= S_AFF){
-		return processAff(command);
-	}else if(regpresent(regcomp, command) && lev <= S_COMP){
-		return processComp(command);
-	}else if(regpresent(regaddsub, command) && lev <= S_ADSB){
-		return processAddSub(command);
-	}else if(regpresent(regmod, command) && lev <= S_MOD){
-		return processMod(command);
-	}else if(regpresent(regmuldiv, command) && lev <= S_MLDV){
-		return processMulDiv(command);
-	}else if(regpresent(regfloat, command)){
+	char *input = malloc(strlen(command) + 1);
+	strcpy(input, command);
+	input = prepareString(input);
+	if(regpresent(reglog, input) && lev <= S_LOG){
+		return processLog(input);
+	}else if(regpresent(regaff, input) && lev <= S_AFF) {
+		return processAff(input);
+	}else if(regpresent(regcomp, input) && lev <= S_COMP){
+		return processComp(input);
+	}else if(regpresent(regaddsub, input) && lev <= S_ADSB){
+		return processAddSub(input);
+	}else if(regpresent(regmod, input) && lev <= S_MOD){
+		return processMod(input);
+	}else if(regpresent(regmuldiv, input) && lev <= S_MLDV){
+		return processMulDiv(input);
+	}else if(regpresent(regfloat, input)){
 		res.type = S_FLOT;
 		res.undefined = False;
-		res.value.vf = parseFloat(command);
+		res.value.vf = parseFloat(input);
 		return res;
-	}else if(regpresent(regint, command)){
+	}else if(regpresent(regint, input)){
 		res.type = S_ENT;
 		res.undefined = False;
-		res.value.ve = parseInt(command);
+		res.value.ve = parseInt(input);
 		return res;
-	}else if(regpresent(regchar, command)) {
+	}else if(regpresent(regchar, input)) {
 		res.type = S_CAR;
 		res.undefined = False;
-		res.value.vc = parseChar(command);
+		res.value.vc = parseChar(input);
 		return res;
-	}else if(regpresent(regstr, command)) {
-		char *s = malloc(strlen(command));
-		strcpy(s, command + 1);
+	}else if(regpresent(regstr, input)) {
+		char *s = malloc(strlen(input));
+		strcpy(s, input + 1);
 		s[strlen(s) - 1] = '\0';
 		res.value.vs = parseString(s);
 		if (res.value.vs != NULL) {
@@ -176,23 +158,23 @@ s_var processOperation(const char *command, s_cat lev){
 			return res;
 		}
 		returnNillVar;
-	}else if(regpresent(regbool, command)){
+	}else if(regpresent(regbool, input)){
 		res.undefined = False;
 		res.type = S_BOOL;
-		if(strcmp(command, "True") == 0){
+		if(strcmp(input, "True") == 0){
 			res.value.vb = True;
 			return res;
 		}
-		if(strcmp(command, "False") == 0){
+		if(strcmp(input, "False") == 0){
 			res.value.vb = False;
 			return res;
 		}
 		returnNillVar;
-	}else if(regpresent(regvar, command)){
-		s_var *p = resolve_var(command);
+	}else if(regpresent(regvar, input)){
+		s_var *p = resolve_var(input);
 		return (p==NULL)?(s_var){S_NOT, .undefined=True}:*p;
 	}
-	slog("%hhd", regpresent(regchar, command));
-	slog("Error unrecognized command \"%s\"\n", command);
+	slog("%hhd", regpresent(regchar, input));
+	slog("Error unrecognized input \"%s\"\n", command);
 	returnNillVar;
 }

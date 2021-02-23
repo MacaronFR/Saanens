@@ -1,45 +1,5 @@
 #include <processop.h>
 
-boolean check_parenthese(const char *l){
-	if(l != NULL){
-		char *reg = "[(].+[)]";
-		return regpresent(reg, l);
-	}
-	return False;
-}
-
-char *execute_parenthese(const char *l){
-	s_var resparenthese;
-	const char *substr;
-	char *resstr, *nl;
-	int nlen;
-	if(l != NULL) {
-		char *command[1];
-		if(regparenthesis(l, command)){
-			trim(command[0]);
-			resparenthese = processOperation(command[0], S_LOG);
-			substr = NULL;
-			for(int i = 0; i < strlen(l); ++i){
-				if(l[i] == '('){
-					substr = l+i+1;
-					break;
-				}
-			}
-			resstr = varToString(resparenthese);
-			nlen = strlen(l) - strlen(command[0]) - 2 +strlen(resstr);
-			nl = malloc(nlen);
-			strncpy(nl,l,substr - l - 1);
-			strcpy(nl + (substr - l - 1), resstr);
-			strcpy(nl+(substr-l-1) + strlen(resstr), substr + strlen(command[0]) + 1);
-			freematch(command, 1);
-			free(resstr);
-			return nl;
-		}
-		return NULL;
-	}
-	return NULL;
-}
-
 s_var processLog(const char *c){
 	char *reg = "([^|]+)([|&]{2})(.+)";
 	regmatch_t *pmatch = NULL;
@@ -65,8 +25,8 @@ s_var processLog(const char *c){
 		}
 		if(operator != 0) {
 			res.undefined = False;
-			cast(&op1, S_BOOL);
-			cast(&op2, S_BOOL);
+			castVar(&op1, S_BOOL);
+			castVar(&op2, S_BOOL);
 			res.value.vb = doLog(op1.value.vb, op2.value.vb, operator);
 			return res;
 		}
@@ -94,7 +54,7 @@ s_var processAff(const char *c){
 			returnNillVar;
 		}
 		if(op2.type != op1->type){
-			cast(&op2, op1->type);
+			castVar(&op2, op1->type);
 		}
 		if(assign_value(op1, op2.value)){
 			return *op1;
@@ -138,11 +98,11 @@ s_var processComp(const char *c){
 		res.type = S_BOOL;
 		res.undefined = True;
 		if((op1.type == S_CHAINE || op2.type == S_CHAINE) && op1.type != op2.type){
-			cast(&op2, S_CHAINE);
-			cast(&op1, S_CHAINE);
+			castVar(&op2, S_CHAINE);
+			castVar(&op1, S_CHAINE);
 		}else if(op1.type != op2.type){
-			cast(&op1, S_ENT);
-			cast(&op2, S_ENT);
+			castVar(&op1, S_ENT);
+			castVar(&op2, S_ENT);
 		}
 		res.value.vb = doComp(&op1, &op2, operator);
 		res.undefined = False;
@@ -177,8 +137,8 @@ s_var processAddSub(const char *c){
 			returnNillVar;
 		}
 		if((op1.type == S_CHAINE || op2.type == S_CHAINE) && operator == S_ADD){
-			cast(&op1, S_CHAINE);
-			cast(&op2, S_CHAINE);
+			castVar(&op1, S_CHAINE);
+			castVar(&op2, S_CHAINE);
 			resstr = malloc(sizeof(op1.value.vs) + sizeof(op2.value.vs) + 1);
 			strcpy(resstr, op1.value.vs);
 			strcat(resstr, op2.value.vs);
@@ -186,21 +146,22 @@ s_var processAddSub(const char *c){
 			res.type = S_CHAINE;
 			res.value.vs = resstr;
 		}else if((op1.type == S_CAR && op2.type == S_ENT) || (op2.type == S_CAR && op1.type == S_ENT)){
-			cast(&op1, S_CAR);
-			cast(&op2, S_CAR);
+			castVar(&op1, S_CAR);
+			castVar(&op2, S_CAR);
 			res.undefined = False;
 			res.type = S_CAR;
 			doIntOp((int)op1.value.vc, (int)op2.value.vc, operator);
 		}else if(op1.type == S_FLOT || op2.type == S_FLOT){
-			cast(&op1, S_FLOT);
-			cast(&op2, S_FLOT);
+			castVar(&op1, S_FLOT);
+			castVar(&op2, S_FLOT);
 			res.undefined = False;
 			res.type = S_FLOT;
 			res.value.vf = doFloatOp(op1.value.vf, op1.value.vf, operator);
 		}else if(op1.type == S_BOOL || op1.type == S_ENT || op2.type == S_BOOL || op2.type == S_ENT){
 			res.type = S_ENT;
-			cast(&op1, S_ENT);
-			cast(&op2, S_ENT);
+			res.undefined = False;
+			castVar(&op1, S_ENT);
+			castVar(&op2, S_ENT);
 			res.value.ve = doIntOp(op1.value.ve, op2.value.ve, operator);
 		}else{
 			returnNillVar;
@@ -267,12 +228,12 @@ s_var processMulDiv(const char *c){
 		if(op1.type == S_FLOT || op2.type == S_FLOT){
 			res.type = S_FLOT;
 			res.undefined = False;
-			cast(&op1, S_FLOT);
-			cast(&op2, S_FLOT);
+			castVar(&op1, S_FLOT);
+			castVar(&op2, S_FLOT);
 			res.value.vf = doFloatOp(op1.value.vf, op2.value.vf, operator);
 		}else if(op1.type == S_ENT || op2.type == S_ENT || op1.type == S_BOOL || op2.type == S_BOOL){
-			cast(&op1, S_ENT);
-			cast(&op2, S_ENT);
+			castVar(&op1, S_ENT);
+			castVar(&op2, S_ENT);
 			res.type = S_ENT;
 			res.undefined = False;
 			res.value.ve = doIntOp(op1.value.ve, op2.value.ve, operator);

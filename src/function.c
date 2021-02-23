@@ -5,10 +5,9 @@ void print(char *string){
 }
 
 void exitSaanens(){
+	destroy_vars();
 	exit(0);
 }
-
-
 
 void clearlog(){
 	FILE *f = fopen("SaanensCLI.log", "w");

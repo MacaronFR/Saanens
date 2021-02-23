@@ -15,6 +15,6 @@ boolean s_testreg_pcre(const char *exp, const char *command, regmatch_t **pmatch
 
 boolean process_pmatch(const char *string, regmatch_t *pmatch, size_t nmatch, char **info);
 boolean s_testreg(const char *exp, const char *command, regmatch_t **pmatch,int cflags);
-boolean regparenthesis(const char *input, char **match);
+boolean regparenthesis(const char *input, char **match, int **start_end);
 
 #endif //SAANENS_REGFUNC_H

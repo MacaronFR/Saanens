@@ -3,7 +3,7 @@ project(Saanens C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(Saanens src/main.c src/interpret.c src/variable.c src/function.c src/operation.c src/regfunc.c src/parse.c src/processop.c src/cast.c src/s_func.c src/condboucle.c)
+add_executable(Saanens src/main.c src/interpret.c src/variable.c src/function.c src/operation.c src/regfunc.c src/parse.c src/processop.c src/cast.c src/s_func.c src/condboucle.c src/format.c)
 
 #find_package(PkgConfig REQUIRED)
 #pkg_check_modules(GTK3 REQUIRED gtk+-3.0)

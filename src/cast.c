@@ -1,12 +1,12 @@
 #include <cast.h>
 
-boolean cast(s_var *v, type t){
-	switch (t) {
-		case S_ENT: return castInt(v);
-		case S_FLOT: return castFloat(v);
-		case S_CAR: return castChar(v);
-		case S_CHAINE: return castString(v);
-		case S_BOOL: return castBool(v);
+boolean castVar(s_var *variable, type type_to_cast){
+	switch (type_to_cast) {
+		case S_ENT: return castInt(variable);
+		case S_FLOT: return castFloat(variable);
+		case S_CAR: return castChar(variable);
+		case S_CHAINE: return castString(variable);
+		case S_BOOL: return castBool(variable);
 		default: return False;
 	}
 }
@@ -74,4 +74,26 @@ boolean castBool(s_var *v){
 		default: return False;
 	}
 	return True;
+}
+
+char *cast(char *input){
+	char *regcast = "(int|float|char|string|bool)";
+	char *tmp;
+	regmatch_t *pmatch = NULL;
+	char *arg[2];
+	int *se = malloc(sizeof(int) * 2);
+	type t;
+	regretrieve(regcast, input, &pmatch);
+	regparenthesis(input, arg+1, &se);
+	se[0] = pmatch[0].rm_so;
+	process_pmatch(input, pmatch, 1, arg);
+	t = get_type_from_name(arg[0], strlen(arg[0]));
+	s_var res = processOperation(arg[1], 0);
+	freematch(arg, 2);
+	castVar(&res, t);
+	char *resstr = varToString(res);
+	tmp = replace_in_string(input, resstr, se[0], se[1]+1);
+	free(input);
+	input = tmp;
+	return input;
 }

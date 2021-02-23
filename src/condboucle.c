@@ -3,22 +3,29 @@
 extern FILE *in;
 
 boolean condboucle(char *command, boolean history){
-	char *expcondition = "^[ \t\n\r\f]*(chevre|troupeau)[ \t\n\r\f]*[(][ \t\n\r\f]*(.*[^ \t\n\r\f])[ \t\n\r\f]*[)][ \t\n\r\f]*:[ \t\n\r\f]*$"; //regexp pour condition
+	char *expcondboucle = "^(chevre|fromage)[ \t\n\r\f]*[(][ \t\n\r\f]*(.*[^ \t\n\r\f])[ \t\n\r\f]*[)][ \t\n\r\f]*:$"; //regexp pour condition
 	regmatch_t *pmatch = NULL;
 	char *info[2];
 	int start,end;
-	regretrieve(expcondition,command,&pmatch);
+	regretrieve(expcondboucle,command,&pmatch);
 	process_pmatch(command,pmatch,2,info);
 	if(strcmp(info[0], "chevre") == 0){//si if
 		if(chevre(info[1],history)){//si if sans erreur
+			freematch(info, 2);
+			return True;
+		}
+	}else if(strcmp(info[0], "fromage") == 0){
+		if(fromage(info[1], history)){
+			freematch(info, 2);
 			return True;
 		}
 	}
+	freematch(info, 2);
 	return False;
 }
 
 boolean chevre(char *arg, boolean history){ //execute condition
-	char reg[] = "^(chevre|breche).*[(](.*)[)].*:";
+	char reg[] = "^(chevre).*[(](.*)[)].*:";
 	int brebis = -1, chevreau, finchevre;
 	int i = 0;
 	char **cmd;
@@ -60,16 +67,6 @@ boolean chevre(char *arg, boolean history){ //execute condition
 		cmd[0] = malloc(strlen(next_history()->line));
 		strcpy(cmd[0], current_history()->line);
 		if(regpresent(reg, cmd[0])){
-			if(regpresent("breche", cmd[0])){
-				if(i == 0) {
-					if (brebis == -1)
-						brebis = where_history();
-					else {
-						slog("Error already have brebis");
-						return False;
-					}
-				}
-			}
 			++i;
 		}
 		if(strcmp(cmd[0],"brebis:") == 0 && i == 0){
@@ -111,5 +108,55 @@ boolean chevre(char *arg, boolean history){ //execute condition
 		}
 	}
 	history_set_pos(finchevre);
+	return True;
+}
+
+boolean fromage(char *arg, boolean history){
+	int fromage, fin;
+	int i = 0;
+	char **cmd;
+	char *histline;
+	int nbcmd;
+	s_var cond;
+	fromage = where_history() + 1;
+	char *test = history_get(fromage)->line;
+	do{
+		if(history_offset == history_length-1) {
+			nbcmd = 0;
+			while(nbcmd == 0){
+				cmd = NULL;
+				nbcmd = getinput(in, &cmd);
+				for (int j = 0; j < nbcmd; j++) {
+					add_history(cmd[j]);
+					free(cmd[j]);
+				}
+				free(cmd);
+				cmd = NULL;
+			}
+		}
+		cmd = malloc(sizeof(char *));
+		cmd[0] = malloc(strlen(next_history()->line));
+		strcpy(cmd[0], current_history()->line);
+		if(strcmp(cmd[0], "finfromage;") == 0 && i != 0){
+			--i;
+			continue;
+		}
+		if(regpresent(cmd[0], "fromage")){
+			++i;
+			continue;
+		}
+	}while(i != 0 || strcmp(cmd[0], "finfromage;") != 0);
+	fin = where_history()+1;
+	cond = processOperation(arg, 0);
+	castBool(&cond);
+	while(cond.value.vb){
+		for(i = fromage + 1; i < fin; ++i){
+			histline = malloc(strlen(history_get(i)->line));
+			strcpy(histline, history_get(i)->line);
+			interpret_command(histline, True);
+		}
+		cond = processOperation(arg, 0);
+		castBool(&cond);
+	}
 	return True;
 }

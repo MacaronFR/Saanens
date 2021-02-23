@@ -1,8 +1,8 @@
 #ifndef SAANENS_FUNCTION_H
 #define SAANENS_FUNCTION_H
 
-#include <stdlib.h>
-#include <s_func.h>
+
+#include <processop.h>
 
 void print(char *string);
 void exitSaanens();

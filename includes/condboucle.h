@@ -8,5 +8,6 @@
 
 boolean condboucle(char *command, boolean history);
 boolean chevre(char *arg, boolean history);
+boolean fromage(char *arg, boolean history);
 
 #endif //SAANENS_BOUCLE_H

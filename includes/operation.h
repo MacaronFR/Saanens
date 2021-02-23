@@ -1,7 +1,6 @@
 #ifndef SAANENS_OPERATION_H
 #define SAANENS_OPERATION_H
 
-#include <variable.h>
 #include <regfunc.h>
 #include <stdio.h>
 #include <interpret.h>
