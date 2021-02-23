@@ -6,7 +6,6 @@ extern s_vars vartab;
 
 int main(int argc,char **argv){
 	in = stdin;
-	printf("#%s#\n","'([^\\\\]|\\\\[abfnrtv\\\\'\"?])'");
 	if(argc == 2){
 		in = fopen(argv[1], "rb");
 	}

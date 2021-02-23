@@ -7,7 +7,6 @@
 #include <variable.h>
 #include <regex.h>
 #include <function.h>
-#include <pcre2.h>
 
 #define regpresent(exp, command) (s_testreg(exp, command, NULL, REG_NOSUB | REG_EXTENDED))
 #define regretrieve(exp, command, pmatch) (s_testreg(exp, command, pmatch, REG_EXTENDED))

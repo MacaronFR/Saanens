@@ -5,30 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-typedef enum s_bool{False = 0, True = 1} boolean;
-
-typedef enum s_type{S_NOT = 0, S_ENT = 1, S_FLOT = 2, S_CAR = 4, S_CHAINE = 8, S_TAB = 16, S_BOOL} type;
-
-typedef union s_value{
-	int ve;
-	double vf;
-	char vc;
-	char *vs;
-	boolean vb;
-} s_value;
-
-typedef struct s_var{
-	type type;
-	char *name;
-	s_value value;
-	boolean undefined;
-} s_var;
-
-typedef struct s_vars{
-	s_var *tab;
-	uint64_t length;
-} s_vars;
+#include <s_type.h>
 
 s_var *new_var(const char *name, size_t name_size, type t);
 boolean assign_value(s_var *var, s_value value);
@@ -41,5 +18,6 @@ type get_type_from_name(const char *name, size_t name_size);
 char *get_name_from_type(type t);
 s_var *get_var(const char *name, size_t name_size);
 s_var *get_var_i(uint64_t index);
+char *varToString(s_var var);
 
 #endif //SAANENS_VARIABLE_H

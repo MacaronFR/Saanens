@@ -35,7 +35,7 @@ boolean assign_value(s_var *var, s_value value){
 		case S_FLOT: var->value.vf = value.vf;break;
 		case S_CAR: var->value.vc = value.vc;break;
 		case S_CHAINE: var->value.vs = value.vs;break;
-		case S_BOOL: var->value.vb = value.vb;
+		case S_BOOL: var->value.vb = value.vb;break;
 		default: return False;
 	}
 	return True;
@@ -115,4 +115,21 @@ s_var *get_var(const char *name, size_t name_size){
 s_var *get_var_i(uint64_t index){
 	if(index >= 0 && index < vartab.length)
 		return vartab.tab + index;
+}
+
+char *varToString(s_var v){
+	char format[5];
+	char input[100];
+	char *ret;
+	switch (v.type){
+		case S_ENT: strcpy(format, "%d");sprintf(input, format, v.value.ve);break;
+		case S_FLOT: strcpy(format, "%lf");sprintf(input, format, v.value.vf);break;
+		case S_BOOL: strcpy(format, "%hhd");sprintf(input, format, v.value.vb);break;
+		case S_CAR: strcpy(format, "%c");sprintf(input, format, v.value.vc);break;
+		case S_CHAINE: v.value.vs;
+		default: return NULL;
+	}
+	ret = malloc(strlen(input) + 1);
+	strcpy(ret, input);
+	return ret;
 }
