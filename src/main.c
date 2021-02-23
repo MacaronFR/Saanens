@@ -13,7 +13,7 @@ int main(int argc,char **argv){
 	using_history();
 	char **cmd;
 	int nbcmd;
-	printf("Saanens V0.1\n");
+	printf("Saanens V1.0\n");
 	boolean quit = False;
 	while(!quit){
 		if(in == stdin) {
