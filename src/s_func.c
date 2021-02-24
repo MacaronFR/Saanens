@@ -3,10 +3,11 @@
 void slog(char *format, ...){
 	va_list arg;
 	va_start(arg,format);
-	FILE *f = fopen("SaanensCLI.log", "ab");
+	//FILE *f = fopen("SaanensCLI.log", "ab");
+	FILE *f = stdout;
 	vfprintf(f, format, arg);
 	va_end(arg);
-	fclose(f);
+	//fclose(f);
 }
 
 void freematch(char *match[], size_t n){

@@ -10,9 +10,8 @@ boolean interpret_command(char *command, boolean history){
 		return True;
 	} else if (strcmp(command, "exit;") == 0) {
 		exitSaanens();
-		return False;
 	}
-	return True;
+	return False;
 }
 
 boolean declare(char *command){ //Fonction declaration de variable
@@ -20,11 +19,10 @@ boolean declare(char *command){ //Fonction declaration de variable
 	char *info[3];
 	s_var val;
 	s_var *nvar;
-	int start = 0;
-	int end = 0;
 	regmatch_t *pmatch = NULL;
 	if(!regretrieve(exp,command,&pmatch)){//Recupération des infos importantes de la commande
 		slog("Invalid declaration\n");
+		free(pmatch);
 		return False;
 	}
 	process_pmatch(command, pmatch, 3, info); //Process des pmatch vers des chaines
@@ -97,7 +95,10 @@ boolean detect_operation(char *command, boolean history){
 			command[strlen(command)-1] = '\0';
 		}
 		s_var res = processOperation(command, 0);
-		//TODO log pour voir res d'une opération;
+		if(res.undefined){
+			slog("Error on command \"%s\"", command);
+			return False;
+		}
 		return True;
 	}
 	return False;
@@ -174,7 +175,6 @@ s_var processOperation(const char *command, s_cat lev){
 		s_var *p = resolve_var(input);
 		return (p==NULL)?(s_var){S_NOT, .undefined=True}:*p;
 	}
-	slog("%hhd", regpresent(regchar, input));
-	slog("Error unrecognized input \"%s\"\n", command);
+	slog("Error unrecognized command \"%s\"\n", command);
 	returnNillVar;
 }
