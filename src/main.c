@@ -2,12 +2,39 @@
 #include <interpret.h>
 
 FILE *in;
+FILE *out;
 extern s_vars vartab;
+
+int check_options(int argc, char **argv){
+	for(int i = 1; i < argc; ++i){
+		if(argv[i][0] == '-'){
+			switch (argv[i][1]){
+				case 'h': printf("Saanens V1.0\nUsage :\n\tSaanens <file> [-o output-file]->Interpret <file> with optional-output file\n\tSaanens -h -> Display this help\n\tSaanens -v -> Show actual version");return 1;
+				case 'v': printf("Saanens V1.0\nMade by TURBIEZ Denis and BOUDEDJA Kamilia");return 1;
+				case 'o': out = fopen(argv[i+1],"wb");if(out == NULL){printf("Error in opening output file : %s",argv[i+1]);exitSaanens();}return 0;
+				default: printf("Error. To see option available type Saanens -h");return -1;
+			}
+		}else{
+			in = fopen(argv[i], "rb");
+			if(in == NULL){
+				in = stdout;
+			}
+		}
+	}
+	return 0;
+}
 
 int main(int argc,char **argv){
 	in = stdin;
-	if(argc == 2){
-		in = fopen(argv[1], "rb");
+	out = stdout;
+	int res = check_options(argc, argv);
+	if(argc >= 2){
+		if(res == -1){
+			return -1;
+		}
+		if(res == 1){
+			return 0;
+		}
 	}
 	clearlog();
 	using_history();
@@ -42,9 +69,10 @@ int main(int argc,char **argv){
 					break;
 			}
 		}
-		fflush(stderr);
-		fflush(stdout);
-		//printf("Name %s, type %s value %d\n",vartab.tab[0].name,get_name_from_type(vartab.tab[0].type),vartab.tab[0].value.ve);
 	}
+	if(in != stdin)
+		fclose(in);
+	if(out != stdin)
+		fclose(out);
 	return 0;
 }

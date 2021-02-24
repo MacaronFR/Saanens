@@ -5,6 +5,10 @@ void print(char *string){
 }
 
 void exitSaanens(){
+	if(in != stdin)
+		fclose(in);
+	if(out != stdin)
+		fclose(out);
 	destroy_vars();
 	clear_history();
 	exit(0);

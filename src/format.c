@@ -36,7 +36,7 @@ char *prepareString(char *input){
 				strcpy(instr, arg);
 				free(arg);
 			}else{
-				instr = malloc(l);
+				instr = malloc(l+1);
 				*instr = '\0';
 			}
 			strcat(instr, buf);

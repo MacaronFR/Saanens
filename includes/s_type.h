@@ -31,6 +31,7 @@ typedef struct s_vars{
 } s_vars;
 
 extern FILE *in;
+extern FILE *out;
 
 #define returnNillVar return (s_var){S_NOT,.undefined = True}
 

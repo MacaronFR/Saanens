@@ -149,7 +149,7 @@ s_var processOperation(const char *command, s_cat lev){
 		res.value.vc = parseChar(input);
 		return res;
 	}else if(regpresent(regstr, input)) {
-		char *s = malloc(strlen(input));
+		char *s = malloc(strlen(input)+1);
 		strcpy(s, input + 1);
 		s[strlen(s) - 1] = '\0';
 		res.value.vs = parseString(s);
