@@ -20,10 +20,10 @@ char *prepareString(char *input){
 		strcpy(tmp+1, arg);
 		tmp[strlen(tmp)+1] = '\0';
 		tmp[strlen(tmp)] = ')';
-		free(arg);
+		freematch(&arg, 1);
 		arg = tmp;
 		preparePrint(arg);
-		freematch(&arg, 1);
+		free(arg);
 		while(fgets(buf, 255, stdin)){
 			l = strlen(buf);
 			if(buf[l-1] == '\n'){
@@ -39,7 +39,7 @@ char *prepareString(char *input){
 				instr = malloc(l);
 				*instr = '\0';
 			}
-			strcpy(instr + strlen(instr),buf);
+			strcat(instr, buf);
 			if(l < 255){
 				break;
 			}
@@ -69,29 +69,15 @@ boolean check_parenthese(const char *l){
 
 char *execute_parenthese(const char *l){
 	s_var resparenthese;
-	const char *substr;
 	char *resstr, *nl;
-	int nlen;
+	int *se = malloc(sizeof(int) * 2);
 	if(l != NULL) {
 		char *command[1];
-		if(regparenthesis(l, command, NULL)){
+		if(regparenthesis(l, command, &se)){
 			trim(command[0]);
 			resparenthese = processOperation(command[0], S_LOG);
-			substr = NULL;
-			for(int i = 0; i < strlen(l); ++i){
-				if(l[i] == '('){
-					substr = l+i+1;
-					break;
-				}
-			}
 			resstr = varToString(resparenthese);
-			nlen = strlen(l) - strlen(command[0]) - 2 +strlen(resstr);
-			nl = malloc(nlen);
-			strncpy(nl,l,substr - l - 1);
-			strcpy(nl + (substr - l - 1), resstr);
-			strcpy(nl+(substr-l-1) + strlen(resstr), substr + strlen(command[0]) + 1);
-			freematch(command, 1);
-			free(resstr);
+			nl = replace_in_string(l, resstr, se[0] - 1, se[1] + 1);
 			return nl;
 		}
 		return NULL;
@@ -100,10 +86,13 @@ char *execute_parenthese(const char *l){
 }
 
 char *replace_in_string(const char *source, const char *replace, int start, int end){
-	char *new = malloc(strlen(source) - (end-start) + strlen(replace) + 1);
-	strncpy(new, source, start);
-	strcpy(new + start, replace);
-	strcpy(new+start+strlen(replace), source+end);
-	return new;
+	if(source != NULL && replace != NULL) {
+		char *new = malloc(strlen(source) - (end - start) + strlen(replace) + 1);
+		strncpy(new, source, start);
+		strcpy(new + start, replace);
+		strcpy(new + start + strlen(replace), source + end);
+		return new;
+	}
+	return NULL;
 }
 
