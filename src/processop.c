@@ -8,13 +8,12 @@ s_var processLog(const char *c){
 	s_var res = {.undefined = True, .type = S_BOOL};
 	if(regretrieve(reg, c, &pmatch)){
 		char *info[3];
-		process_pmatch(c, pmatch, 4, info);
+		process_pmatch(c, pmatch, 3, info);
 		trim(info[0]);
 		trim(info[1]);
 		trim(info[2]);
 		op1 = processOperation(info[0], S_LOG);
 		op2 = processOperation(info[2], S_LOG);
-		freematch(info, 3);
 		if (op1.undefined || op2.undefined){
 			returnNillVar;
 		}
@@ -22,11 +21,15 @@ s_var processLog(const char *c){
 			operator = S_OR;
 		}else if(strcmp(info[1], "&&") == 0){
 			operator = S_AND;
+		}else{
+			freematch(info, 3);
+			returnNillVar;
 		}
+		freematch(info, 3);
 		if(operator != 0) {
 			res.undefined = False;
-			castVar(&op1, S_BOOL);
-			castVar(&op2, S_BOOL);
+			if(!castVar(&op1, S_BOOL) || !castVar(&op2, S_BOOL))
+				returnNillVar;
 			res.value.vb = doLog(op1.value.vb, op2.value.vb, operator);
 			return res;
 		}
@@ -54,7 +57,8 @@ s_var processAff(const char *c){
 			returnNillVar;
 		}
 		if(op2.type != op1->type){
-			castVar(&op2, op1->type);
+			if(!castVar(&op2, op1->type))
+				returnNillVar;
 		}
 		if(assign_value(op1, op2.value)){
 			return *op1;
@@ -74,7 +78,6 @@ s_var processComp(const char *c){
 		trim(match[0]);
 		trim(match[1]);
 		trim(match[2]);
-		operator = 0;
 		if(strcmp(match[1], "==") == 0){
 			operator = S_EQ;
 		}else if(strcmp(match[1], "<>") == 0){
@@ -87,6 +90,9 @@ s_var processComp(const char *c){
 			operator = S_BEL;
 		}else if(strcmp(match[1], "<=") == 0){
 			operator = S_BLE;
+		}else{
+			freematch(match, 3);
+			returnNillVar;
 		}
 		op1 = processOperation(match[0], S_COMP);
 		op2 = processOperation(match[2], S_COMP);
@@ -101,8 +107,8 @@ s_var processComp(const char *c){
 			castVar(&op2, S_CHAINE);
 			castVar(&op1, S_CHAINE);
 		}else if(op1.type != op2.type){
-			castVar(&op1, S_ENT);
-			castVar(&op2, S_ENT);
+			if(!castVar(&op1, S_ENT) || !castVar(&op2, S_ENT))
+				returnNillVar;
 		}
 		res.value.vb = doComp(&op1, &op2, operator);
 		res.undefined = False;
@@ -129,6 +135,9 @@ s_var processAddSub(const char *c){
 			operator = S_ADD;
 		}else if(strcmp(match[1], "-") == 0){
 			operator = S_SUB;
+		}else{
+			freematch(match, 3);
+			returnNillVar;
 		}
 		op1 = processOperation(match[0], S_ADSB);
 		op2 = processOperation(match[2], S_ADSB);
