@@ -6,6 +6,7 @@ void print(char *string){
 
 void exitSaanens(){
 	destroy_vars();
+	clear_history();
 	exit(0);
 }
 
