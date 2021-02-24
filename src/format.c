@@ -44,6 +44,12 @@ char *prepareString(char *input){
 				break;
 			}
 		}
+		arg = malloc(strlen(instr) + 3);
+		arg[0] = '"';
+		strcpy(arg+1, instr);
+		arg[strlen(arg) + 1] = '\0';
+		arg[strlen(arg)] = '"';
+		instr = arg;
 		arg = replace_in_string(input, instr, se[0], se[1] + 1);
 		free(input);
 		input = arg;
