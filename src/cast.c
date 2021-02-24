@@ -34,7 +34,7 @@ boolean castInt(s_var *v){
 		case S_FLOT: v->type = S_ENT;v->value.ve = (int)v->value.vf;break;
 		case S_CAR: v->type = S_ENT;v->value.ve = (int)v->value.vc != 0;break;
 		case S_BOOL: v->type = S_ENT;v->value.ve = (int)v->value.vb;break;
-		case S_CHAINE: v->type = S_ENT;v->value.ve = (v->value.vs == NULL)?0:parseInt(v->value.vs);break;
+		case S_CHAINE: v->type = S_ENT;int tmp = (v->value.vs == NULL)?0:parseInt(v->value.vs);free(v->value.vs);v->value.ve = tmp;break;
 		default: return False;
 	}
 	return True;
@@ -46,7 +46,7 @@ boolean castFloat(s_var *v){
 		case S_FLOT: return True;
 		case S_CAR: v->type = S_FLOT;v->value.vf = (double)v->value.vc != 0;break;
 		case S_BOOL: v->type = S_FLOT;v->value.vf = (double)v->value.vb;break;
-		case S_CHAINE: v->type = S_FLOT;v->value.vf = (v->value.vs == NULL)?0.:parseFloat(v->value.vs);break;
+		case S_CHAINE: v->type = S_FLOT;double tmp = (v->value.vs == NULL)?0.:parseFloat(v->value.vs);free(v->value.vs); v->value.vf = tmp;break;
 		default: return False;
 	}
 	return True;
@@ -58,7 +58,7 @@ boolean castChar(s_var *v){
 		case S_FLOT: v->type = S_CAR;v->value.vc = (char)v->value.vf;break;
 		case S_CAR: return True;
 		case S_BOOL: v->type = S_CAR;v->value.vc = v->value.vb?'T':'F';break;
-		case S_CHAINE: v->type = S_CAR;v->value.vc = (v->value.vs == NULL)?'\0':v->value.vs[0];break;
+		case S_CHAINE: v->type = S_CAR;char tmp = (v->value.vs == NULL)?'\0':v->value.vs[0];free(v->value.vs); v->value.vc = tmp;break;
 		default: return False;
 	}
 	return True;
@@ -70,7 +70,7 @@ boolean castBool(s_var *v){
 		case S_FLOT: v->type = S_BOOL;v->value.vf = (v->value.vf != 0.)?True:False;break;
 		case S_CAR: v->type = S_BOOL;v->value.vc = (v->value.vc != 0)?True:False;break;
 		case S_BOOL: return True;
-		case S_CHAINE: v->type = S_BOOL;v->value.vb = (v->value.vs == NULL || strcmp(v->value.vs, "") == 0)?True:False;break;
+		case S_CHAINE: v->type = S_BOOL;boolean tmp = (v->value.vs == NULL || strcmp(v->value.vs, "") == 0)?True:False;free(v->value.vs); v->value.vb = tmp;break;
 		default: return False;
 	}
 	return True;
